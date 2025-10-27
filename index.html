@@ -1,1 +1,253 @@
+<!DOCTYPE html>
 
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Owen Emerson — Portfolio</title>
+
+  <meta name="description" content="Artistic Website of Owen Emerson." />
+
+
+
+  <!-- Google Fonts -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;900&display=swap" rel="stylesheet">
+
+
+
+  <!-- Your CSS file (optional) -->
+
+  <link rel="stylesheet" href="style.css">
+
+
+
+  <style>
+
+    :root{
+
+      --bg:#000;
+
+      --ink:#e6f0ff;
+
+      --muted:#0066ff;
+
+      --link:#0a66c2;
+
+      --pad: clamp(14px, 2.5vw, 24px);
+
+      --max: 980px;
+
+      --grid-gap: clamp(8px, 1.6vw, 16px);
+
+      --font-head: "Source Serif 4", serif;
+
+      --font-body: "Source Serif 4", serif;
+
+    }
+
+
+
+    /* ---------- sticky footer layout ---------- */
+
+    html, body { height: 100%; }
+
+    body{
+
+      margin:0;
+
+      display:flex;
+
+      flex-direction:column;
+
+      font:16px/1.55 var(--font-body);
+
+      color:var(--ink);
+
+      background:var(--bg);
+
+    }
+
+    main{
+
+      flex:1;                        /* fills remaining space */
+
+      max-width:var(--max);
+
+      margin:0 auto;
+
+      padding:var(--pad);
+
+    }
+
+    footer{
+
+      max-width:var(--max);
+
+      margin:0 auto;
+
+      padding:var(--pad);
+
+      color:ink(--muted);
+
+      font-family: var(--font-body);
+
+    }
+
+
+
+    /* ---------- type + links ---------- */
+
+    h1,h2,h3,h4,h5,h6{
+
+      font-family:var(--font-head);
+
+      font-weight:900;
+
+      letter-spacing:.03em;
+
+      margin:0 0 .5rem;
+
+    }
+
+    a{
+
+      color:var(--ink);
+
+      text-decoration:none;
+
+      border-bottom:1px solid transparent;
+
+    }
+
+    a:hover{ border-bottom-color:currentColor; }
+
+
+
+    /* ---------- header/nav ---------- */
+
+    header{
+
+      position:sticky; top:0;
+
+      background:#000;
+
+      border-bottom:0.5px solid #eee;
+
+    }
+
+    .nav{
+
+      max-width:var(--max);
+
+      margin:0 auto;
+
+      padding:calc(var(--pad)*.8) var(--pad);
+
+      display:flex; align-items:center; gap:24px;
+
+    }
+
+    .brand{
+
+      font-family:var(--font-head);
+
+      font-weight:900;
+
+      letter-spacing:.06em;
+
+    }
+
+    .spacer{ flex:1; }
+
+
+
+    /* cards/grid (kept from your file) */
+
+    section{ padding:calc(var(--pad)*1.25) 0; }
+
+    h1{ font-size:clamp(22px,3.2vw,30px); }
+
+    h2{ font-size:clamp(18px,2.4vw,22px); color:var(--muted); }
+
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--grid-gap); }
+
+    .card{ background:#fff; border:1px solid #e8e6e2; border-radius:12px; overflow:hidden; }
+
+    .thumb{ aspect-ratio:4/3; width:100%; object-fit:cover; background:#eae7e2; }
+
+    .meta{ padding:.7rem .8rem; font-size:.9rem; color:var(--muted); }
+
+
+
+    /* make tabs/headings use headline font too */
+
+    .nav a{ font-family:var(--font-head); font-weight:900; letter-spacing:.06em; }
+
+  </style>
+
+</head>
+
+<body>
+
+  <header>
+
+    <nav class="nav">
+
+      <div class="brand">OWEN EMERSON</div>
+
+      <div class="spacer"></div>
+
+      <a href="about.html">ABOUT</a>
+
+      <a href="media.html">WORK</a>
+
+      <a href="contact.html">CONTACT</a>
+
+    </nav>
+
+  </header>
+
+
+
+  <main>
+
+    <!-- placeholder content so you can see spacing right away -->
+
+    <section>
+
+      
+
+    </section>
+
+  </main>
+
+
+
+  <footer>
+
+    &copy; <span id="year"></span> Owen Emerson. All Rights Reserved.
+
+
+
+  </footer>
+
+
+
+  <script>
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+  </script>
+
+</body>
+
+</html>
