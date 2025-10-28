@@ -1,215 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Owen Denver Emerson — Portfolio</title>
-  <meta name="description" content="Artistic Website of Owen Emerson." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folder Tab Page</title>
   <style>
-    :root {
-      --bg: #EDDFD8;
-      --ink: #7D4D39;
-      --muted: #0066ff;
-      --link: #0a66c2;
-      --pad: clamp(14px, 2.5vw, 24px);
-      --max: 980px;
-      --grid-gap: clamp(8px, 1.6vw, 16px);
-      --font-head: "Source Serif 4", serif;
-      --font-body: "Source Serif 4", serif;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    html, body { height: 100%; margin: 0; }
-    body {
-      display: flex;
-      flex-direction: column;
-      font: 16px/1.55 var(--font-body);
-      color: var(--ink);
-      background: var(--bg);
-      overflow-x: hidden;
+    body, html {
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
     }
 
-    main {
-      flex: 1;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: var(--pad);
+    .folder-background {
       position: relative;
-      z-index: 2;
+      width: 100%;
+      height: 100vh;
+      background: url('A_flat,_digital_vector_illustration_showcases_a_ye.png') no-repeat center center;
+      background-size: contain;
+      background-position: center top;
     }
 
-    footer {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: var(--pad);
-      color: var(--muted);
-      font-family: var(--font-body);
-      z-index: 2;
-    }
-
-    /* Header */
-    header {
-      position: sticky;
-      top: 0;
-      background: #000;
-      border-bottom: 0.5px solid #eee;
-      z-index: 10;
-    }
-    .nav {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: calc(var(--pad)*.8) var(--pad);
+    /* Container for the clickable tabs */
+    .tabs {
+      position: absolute;
+      top: 5%;
+      right: 8%;
       display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-    .brand {
-      font-family: var(--font-head);
-      font-weight: 900;
-      letter-spacing: .06em;
-      color: white;
-    }
-    .spacer { flex: 1; }
-
-    a {
-      color: white;
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-    }
-    a:hover { border-bottom-color: currentColor; }
-
-    /* Canvas background layer */
-    #sketch-holder canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      pointer-events: none;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
 
-    /* Dark mode */
-    body.dark-mode {
-      background: #000;
+    .tab {
+      min-width: 60px;
+      padding: 0.5rem 1rem;
+      border-radius: 6px 6px 0 0;
+      text-align: center;
+      font-weight: bold;
       color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
-    body.dark-mode header {
-      background: #111;
-      color: white;
+
+    .tab:hover {
+      transform: translateY(-2px);
     }
-    body.dark-mode a { color: white; }
+
+    /* Example colors for the tabs */
+    .tab.red { background-color: #f76c6c; }
+    .tab.blue { background-color: #4da6ff; }
+    .tab.yellow { background-color: #f9d976; color: #333; }
+
+    /* Make sure everything scales smoothly */
+    @media (max-width: 600px) {
+      .tabs {
+        top: 4%;
+        right: 6%;
+        gap: 0.5rem;
+      }
+      .tab {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <nav class="nav">
-      <img id="modeToggle" src="my_assets/39aPre.png" alt="Toggle Theme" width="32" height="32" style="cursor:pointer;">
-      <div class="brand">OWEN DENVER EMERSON</div>
-      <div class="spacer"></div>
-      <a href="media.html">WORK</a>
-      <a href="contact.html">CONTACT</a>
-    </nav>
-  </header>
-
-  <div id="sketch-holder"></div>
-
-  <main>
-    <section>
-      <h1></h1>
-      <p></p>
-    </section>
-  </main>
-
-  <footer>
-    &copy; <span id="year"></span> Owen Emerson. All Rights Reserved.
-  </footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-
-  <script>
-    // --- YEAR UPDATE ---
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // --- DARK MODE TOGGLE ---
-    const toggle = document.getElementById('modeToggle');
-    let darkMode = false;
-    toggle.addEventListener('click', () => {
-      darkMode = !darkMode;
-      document.body.classList.toggle('dark-mode', darkMode);
-    });
-
-    // --- P5.JS SKETCH ---
-    let shapes = [];
-    let colorsLight = ['#C28D3C', '#4D5941', '#666954', '#504223', '#546E59', '#72440A', '#C8BF8F', '#C28220'];
-    let colorsDark = ['#ff5f57', '#5df4ff', '#ffe95d', '#76ff5d'];
-    let assets = [];
-    let fadeTime = 4000;
-    let nextChange = 0;
-
-    function preload() {
-      // preload images (example filenames; replace with yours)
-      for (let i = 1; i <= 4; i++) {
-        assets.push(loadImage(`my_homepage/img${i}.png`));
-      }
-    }
-
-    function setup() {
-      let cnv = createCanvas(windowWidth, windowHeight);
-      cnv.parent('sketch-holder');
-      noStroke();
-      generateShapes();
-      nextChange = millis() + random(4000, 8000);
-    }
-
-    function draw() {
-      clear(); // transparent bg
-      let pal = darkMode ? colorsDark : colorsLight;
-
-      shapes.forEach(s => {
-        s.alpha = lerp(s.alpha, s.targetAlpha, 0.02);
-        fill(s.col + hex(int(s.alpha), 2));
-        if (s.img && s.alpha > 10) {
-          tint(255, s.alpha);
-          image(s.img, s.x, s.y, s.w, s.h);
-          noTint();
-        } else {
-          ellipse(s.x, s.y, s.w, s.h);
-        }
-      });
-
-      if (millis() > nextChange) {
-        generateShapes();
-        nextChange = millis() + random(4000, 8000);
-      }
-    }
-
-    function generateShapes() {
-      shapes = [];
-      let pal = darkMode ? colorsDark : colorsLight;
-      for (let i = 0; i < 12; i++) {
-        let x = random(width);
-        let y = random(height);
-        let w = random(100, 200);
-        let h = random(25, 100);
-        let col = random(pal);
-        let img = random() < 0.2 ? random(assets) : null;
-        shapes.push({
-          x, y, w, h, col, img,
-          alpha: 0,
-          targetAlpha: 255
-        });
-      }
-    }
-
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
-
-    function hex(n, digits) {
-      return ('0' + n.toString(16)).slice(-digits);
-    }
-  </script>
+  <div class="folder-background">
+    <div class="tabs">
+      <div class="tab red">Tab 1</div>
+      <div class="tab blue">Tab 2</div>
+      <div class="tab yellow">Tab 3</div>
+    </div>
+  </div>
 </body>
 </html>
