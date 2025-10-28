@@ -1,266 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Owen Denver Emerson — Portfolio</title>
-  <meta name="description" content="Artistic Website of Owen Emerson." />
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Owen Denver Emerson Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
   <style>
     :root {
-      --bg: #EDDFD8;
-      --ink: #7D4D39;
-      --muted: #0066ff;
-      --link: #0a66c2;
-      --pad: clamp(8px, 2.2vw, 18px);
-      --max: 980px;
-      --grid-gap: clamp(8px, 1.6vw, 16px);
-      --font-head: "Source Serif 4", serif;
-      --font-body: "Source Serif 4", serif;
-      --header-bg: #000;
-      --footer-text: var(--ink);
-    }
-
-    /* Dark theme */
-    .dark-theme {
-      --bg: #2B2A28;
-      --ink: #EDDFD8;
-      --muted: #B8A89E;
-      --link: #4A90E2;
-      --header-bg: #3B3735;
-      --footer-text: #CFC7C2;
-    }
-
-    html, body {
-      height: 100%;
+      --color1: #c28d3c;
+      --color2: #4d5941;
+      --color3: #666954;
+      --color4: #504223;
+      --color5: #546e59;
+      --color6: #72440a;
+      --color7: #c8bf8f;
+      --color8: #c28220;
     }
 
     body {
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      font: 16px/1.55 var(--font-body);
-      color: var(--ink);
-      background: var(--bg);
-      transition: background 0.4s, color 0.4s;
-    }
-
-    main {
-      flex: 1;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: var(--pad);
-    }
-
-    footer {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: var(--pad);
-      color: var(--footer-text);
-      font-family: var(--font-body);
-      transition: color 0.4s;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font-head);
-      font-weight: 900;
-      letter-spacing: .03em;
-      margin: 0 0 .5rem;
-    }
-
-    a {
-      color: var(--ink);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-bottom-color 0.3s;
-    }
-
-    a:hover {
-      border-bottom-color: currentColor;
+      font-family: "Cormorant Garamond Bold 700", serif;
+      background: var(--color7);
+      color: var(--color4);
+      transition: background 1s, color 1s;
     }
 
     header {
-      position: sticky;
-      top: 0;
-      background: var(--header-bg);
-      border-bottom: 0.5px solid #eee;
-      transition: background 0.4s, transform 0.4s;
-      z-index: 10;
-      padding: 1.2rem 0; /* increased header height */
+      position: relative;
+      text-align: center;
+      background: var(--color3);
+      padding: 4em 0;
+      overflow: hidden;
+      transition: background 1s;
     }
 
-    /* star overlay (appears only in dark mode) */
-    .dark-theme header::before {
-      content: "";
+    header h1 {
+      font-size: 2.4em;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      position: relative;
+      z-index: 10;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      left: 1.5em;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      z-index: 11;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1em 0;
+      background: var(--color2);
+      color: var(--color7);
+      transition: background 1s, color 1s;
+    }
+
+    #p5-holder {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('my_assets/starrysky.png'); /* transparent PNG of stars */
-      background-size: cover;
-      background-repeat: repeat;
-      background-position: center;
-      opacity: 0.3;
-      pointer-events: none; /* allows clicking links through it */
-      z-index: -1;
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .nav {
-      position: relative;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: calc(var(--pad)*.9) var(--pad); /* scaled up slightly */
-      display: flex;
-      align-items: center;
-      gap: 28px; /* slightly larger gap */
-      font-size: 1.05rem; /* scale text slightly up */
+    body.dark-mode {
+      background: #000;
+      color: #fff;
     }
 
-    .brand {
-      font-family: var(--font-head);
-      font-weight: 900;
-      letter-spacing: .06em;
-      color: var(--ink);
-      font-size: 1.1em; /* larger brand text */
-      transition: color 0.4s;
+    body.dark-mode header {
+      background: #000;
     }
 
-    .spacer {
-      flex: 1;
-    }
-
-    .icon-btn {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .icon-btn img {
-      width: 36px;
-      height: 36px;
-      transition: transform 0.3s ease;
-    }
-
-    .icon-btn:hover img {
-      content: url('my_assets/spiderlayer.png'); /* hover image */
-      transform: scale(1.15);
+    body.dark-mode footer {
+      background: #111;
+      color: #ccc;
     }
 
     @media (max-width: 600px) {
-      .icon-btn img {
-        width: 26px;
-        height: 26px;
-      }
-
-      .nav {
-        gap: 16px;
-        font-size: 1rem;
-      }
-    }
-
-    section {
-      padding: calc(var(--pad)*1.25) 0;
-    }
-
-    h1 {
-      font-size: clamp(22px, 3.2vw, 30px);
-    }
-
-    h2 {
-      font-size: clamp(18px, 2.4vw, 22px);
-      color: var(--muted);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--grid-gap);
-    }
-
-    .card {
-      background: #fff;
-      border: 1px solid #e8e6e2;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .thumb {
-      aspect-ratio: 4/3;
-      width: 100%;
-      object-fit: cover;
-      background: #eae7e2;
-    }
-
-    .meta {
-      padding: .7rem .8rem;
-      font-size: .9rem;
-      color: var(--muted);
-    }
-
-    .nav a {
-      font-family: var(--font-head);
-      font-weight: 900;
-      letter-spacing: .06em;
-      color: var(--ink);
-      transition: color 0.4s;
+      header h1 { font-size: 1.8em; }
+      .theme-toggle { width: 45px; height: 45px; }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <nav class="nav">
-      <div class="icon-btn" id="themeToggle">
-        <img src="my_assets/39aPre.png" alt="Theme toggle icon">
-      </div>
-      <div class="brand">OWEN DENVER EMERSON</div>
-      <div class="spacer"></div>
-      <a href="media.html">WORK</a>
-      <a href="contact.html">CONTACT</a>
-    </nav>
+  <header id="main-header">
+    <img src="my_assets/39aPre.png"
+         data-hover="my_assets/spiderlayer.png"
+         data-alt="my_assets/39aPre.png"
+         class="theme-toggle"
+         id="themeToggle"
+         alt="toggle theme" />
+
+    <h1>Owen Denver Emerson</h1>
+
+    <div id="p5-holder"></div>
   </header>
 
-  <main>
-    <section>
-      <!-- main content -->
-    </section>
-  </main>
+  <footer>&copy; 2025 Owen Denver Emerson</footer>
 
-  <footer>
-    &copy; <span id="year"></span> Owen Emerson. All Rights Reserved.
-  </footer>
-
-  <!-- looping audio (hidden, controlled by JS) -->
   <audio id="darkModeAudio" src="my_assets/classiccrickets.wav" loop></audio>
 
   <script>
-    // Set current year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    const toggle = document.getElementById('themeToggle');
-    const audio = document.getElementById('darkModeAudio');
+    // --- THEME TOGGLE ---
     const body = document.body;
+    const header = document.getElementById("main-header");
+    const icon = document.getElementById("themeToggle");
+    const audio = document.getElementById("darkModeAudio");
+    let isDark = false;
 
-    toggle.addEventListener('click', () => {
-      const isDark = body.classList.toggle('dark-theme');
+    icon.addEventListener("mouseover", () => icon.src = icon.dataset.hover);
+    icon.addEventListener("mouseout", () => icon.src = isDark ? icon.dataset.alt : "my_assets/39aPre.png");
+    icon.addEventListener("click", () => {
+      isDark = !isDark;
+      icon.src = isDark ? icon.dataset.alt : "my_assets/39aPre.png";
+      body.classList.toggle("dark-mode", isDark);
+
+      // update p5 color palette
+      updatePalette(isDark);
+
       if (isDark) {
-        // Play audio when entering dark mode
-        audio.currentTime = 0;
-        audio.play().catch(() => {
-          // if browser blocks autoplay until user interaction, ignore
-        });
+        audio.play();
       } else {
-        // Stop audio when leaving dark mode
         audio.pause();
+        audio.currentTime = 0;
       }
     });
-  </script>
-</body>
-</html>
+
+    // --- P5.js GENERATIVE HEADER ---
+    let pg, shapes = [], colors = [], brightColors = [];
+    let mediaAssets = [], videos = [];
+    let lastChange = 0, fadeProgress = 0, fadeDuration = 2000;
+    let nextChangeInterval = 5000; // will vary randomly between 4–8s
+    let prevShapes = [];
+
+    function preload() {
+      // preload a few images and videos from my_assets
+      for (let i = 1; i <= 4; i++) mediaAssets.push(loadImage(`my_homepage/img${i}.png`));
+      for (let j = 1; j <= 2; j++) videos.push(createVideo([`my_homepage/vid${j}.mp4`]));
+    }
+
+    function setup() {
+      const holder = document.getElementById("p5-holder");
+      let cnv = createCanvas(holder.offsetWidth, holder.offsetHeight);
+      cnv.parent(holder);
+      clear();
+      noStroke();
+
+      colors = [
+        color(194,141,60,95), color(77,89,65,95), color(102,105,84,95),
+        color(80,66,35,95), color(84,110,89,95), color(114,68,10,95),
+        color(200,191,143,95), color(194,130,32,95)
+      ];
+
+      brightColors = [
+        color(255, 70, 70, 150), color(70, 170, 255, 150),
+        color(50, 255, 130, 150), color(255, 240, 80, 150),
+        color(255, 110, 200, 150)
+      ];
+
+      videos.forEach(v => { v.hide(); v.loop(); });
+      generateShapes();
+    }
+
+    function draw() {
+      clear();
+
+      let now = millis();
+      fadeProgress = constrain((now - lastChange) / fadeDuration, 0, 1);
+
+      pg = createGraphics(width, height);
+      pg.clear();
+
+      for (let i = 0; i < shapes.length; i++) {
+        let s1 = prevShapes[i] || shapes[i];
+        let s2 = shapes[i];
+
+        let x = lerp(s1.x, s2.x, fadeProgress);
+        let y = lerp(s1.y, s2.y, fadeProgress);
+        let w = lerp(s1.w, s2.w, fadeProgress);
+        let h = lerp(s1.h, s2.h, fadeProgress);
+        let c = lerpColor(s1.col, s2.col, fadeProgress);
+
+        if (s2.img && random() < 0.5) {
+          pg.imageMode(CENTER);
+          pg.image(s2.img, x, y, w, h);
+        } else if (s2.vid && random() < 0.3) {
+          pg.imageMode(CENTER);
+          pg.image(s2.vid, x, y, w, h);
+        } else {
+          pg.fill(c);
+          if (s2.type === "circle") pg.circle(x, y, w);
+          else if (s2.type === "ellipse") pg.ellipse(x, y, w, h);
+          else if (s2.type === "square") pg.square(x, y, w);
+          else pg.rect(x, y, w, h);
+        }
+      }
+
+      image(pg, 0, 0);
+
+      if (now - lastChange > nextChangeInterval) {
+        nextChangeInterval = random(4000, 8000);
+        prevShapes = shapes;
+        generateShapes();
+        lastChange = now;
+      }
+    }
+
+    function generateShapes() {
+      shapes = [];
+      let shapeTypes = ["circle", "ellipse", "square", "rect"];
+      for (let i = 0; i < 8; i+
