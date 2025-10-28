@@ -301,3 +301,192 @@
         p.setup = function () {
           headerEl = document.querySelector('header .nav') || document.querySelector('header');
           canvasHolder = document.getElementById('header-canvas-holder');
+  // determine holder size (match nav/header area exactly)
+          widthTarget = canvasHolder.offsetWidth;
+          heightTarget = canvasHolder.offsetHeight || headerEl.offsetHeight || 120;
+
+          let cnv = p.createCanvas(widthTarget, heightTarget);
+          cnv.parent('header-canvas-holder');
+          cnv.style('display:block');
+          p.clear(); // transparent
+          p.noStroke();
+
+          pg = p.createGraphics(p.width, p.height);
+          pg.clear();
+
+          // convert palettes to p.color
+          basePalette = basePaletteRGB.map((c) => p.color(c[0], c[1], c[2], c[3]));
+          retroPalette = retroPaletteRGB.map((c) => p.color(c[0], c[1], c[2], c[3]));
+          palette = basePalette.slice();
+
+          // create video elements (hidden) and loop quietly (muted)
+          ASSET_VID_LIST.forEach((f) => {
+            try {
+              let vid = p.createVideo([ASSET_IMG_PREFIX + f], () => {});
+              vid.hide();
+              vid.volume(0);
+              vid.loop();
+              mediaVids.push(vid);
+            } catch (e) {
+              // ignore
+            }
+          });
+
+          // initialize shapes
+          generateShapes();
+
+          // set initial times
+          lastChange = p.millis();
+          nextChangeInterval = p.random(4000, 8000);
+
+          // start drawing loop
+          p.loop();
+
+          // observe header size changes (in case of responsive layout)
+          window.addEventListener('resize', () => {
+            setTimeout(resizeToHolder, 50); // short debounce
+          });
+
+          // expose updateTheme to window so site script can call it
+          window.p5HeaderSketch = {
+            updateTheme: function (darkModeOn) {
+              isDark = !!darkModeOn;
+              palette = isDark ? retroPalette.slice() : basePalette.slice();
+              // force regen with fade
+              prevShapes = shapes.slice();
+              generateShapes();
+              lastChange = p.millis();
+            }
+          };
+        };
+
+        function resizeToHolder() {
+          const w = canvasHolder.offsetWidth;
+          const h = canvasHolder.offsetHeight || headerEl.offsetHeight || 120;
+          p.resizeCanvas(w, h);
+          pg = p.createGraphics(w, h);
+          pg.clear();
+          generateShapes();
+        }
+
+        function generateShapes() {
+          prevShapes = shapes.slice();
+          shapes = [];
+          const types = ['circle','ellipse','square','rect'];
+          for (let i = 0; i < 8; i++) {
+            const type = p.random(types);
+            const w = p.random(100, 200);
+            const h = p.random(25, 75);
+            const x = p.random(p.width * 0.05, p.width * 0.95);
+            const y = p.random(p.height * 0.05, p.height * 0.95);
+            const col = p.random(palette);
+            // rare chance to use image or video
+            const useImg = (mediaImgs.length > 0) && (p.random() < 0.12); // ~12% chance
+            const useVid = (mediaVids.length > 0) && (p.random() < 0.05);  // ~5% chance
+            const img = useImg ? p.random(mediaImgs) : null;
+            const vid = useVid ? p.random(mediaVids) : null;
+            shapes.push({ x, y, w, h, type, col, img, vid });
+          }
+          // set next interval randomly between 4000 and 8000 ms (never faster than 4s)
+          nextChangeInterval = p.random(4000, 8000);
+        }
+
+        p.draw = function () {
+          p.clear(); // clear main canvas to transparent each frame
+          const now = p.millis();
+          const elapsed = now - lastChange;
+          let t = p.constrain(elapsed / fadeDuration, 0, 1);
+
+          // draw interpolated shapes into pg buffer
+          pg = p.createGraphics(p.width, p.height);
+          pg.clear();
+          pg.noStroke();
+
+          for (let i = 0; i < shapes.length; i++) {
+            const s2 = shapes[i];
+            const s1 = prevShapes[i] || s2;
+
+            const x = p.lerp(s1.x || s2.x, s2.x, t);
+            const y = p.lerp(s1.y || s2.y, s2.y, t);
+            const w = p.lerp(s1.w || s2.w, s2.w, t);
+            const h = p.lerp(s1.h || s2.h, s2.h, t);
+
+            // color interpolation
+            let c1 = s1.col || s2.col;
+            let c2 = s2.col;
+            let c = p.lerpColor(c1, c2, t);
+
+            // occasional decision to render media instead of color - small randomness so it's not deterministic but still rare
+            const renderImg = s2.img && (p.random() < 0.45);
+            const renderVid = s2.vid && (p.random() < 0.25);
+
+            if (renderImg) {
+              pg.push();
+              pg.imageMode(p.CENTER);
+              // keep aspect ratio by fitting inside shape rectangle
+              const img = s2.img;
+              let iw = img.width, ih = img.height;
+              let scale = Math.min(w / iw, h / ih);
+              if (scale <= 0) scale = 1;
+              pg.image(img, x, y, iw * scale, ih * scale);
+              pg.pop();
+            } else if (renderVid) {
+              pg.push();
+              pg.imageMode(p.CENTER);
+              const vid = s2.vid;
+              // videos are p5 media elements; draw video frame into canvas
+              try {
+                pg.image(vid, x, y, w, h);
+              } catch (e) {
+                // some browsers may not allow drawing video if not ready
+              }
+              pg.pop();
+            } else {
+              pg.fill(c);
+              if (s2.type === 'circle') pg.circle(x, y, w);
+              else if (s2.type === 'ellipse') pg.ellipse(x, y, w, h);
+              else if (s2.type === 'square') pg.square(x, y, w);
+              else pg.rect(x - w/2, y - h/2, w, h); // rect centered on x,y
+            }
+          }
+
+          // draw the composed graphics into main canvas
+          p.image(pg, 0, 0, p.width, p.height);
+
+          // once interval elapsed, create new shapes
+          if (elapsed > nextChangeInterval) {
+            lastChange = now;
+            prevShapes = shapes.slice();
+            generateShapes();
+          }
+        };
+
+        // allow external scripts to toggle palette
+        p.updateTheme = function (darkModeOn) {
+          isDark = !!darkModeOn;
+          palette = isDark ? retroPalette : basePalette;
+          prevShapes = shapes.slice();
+          generateShapes();
+          lastChange = p.millis();
+        };
+      }; // end instance
+
+      // create p5 instance attached to #header-canvas-holder
+      const holder = document.getElementById('header-canvas-holder');
+
+      // ensure holder height matches nav/header height
+      function sizeHolderToNav() {
+        const nav = document.querySelector('.nav');
+        if (!nav) return;
+        holder.style.height = nav.offsetHeight + 'px';
+        holder.style.width = nav.offsetWidth + 'px';
+      }
+      sizeHolderToNav();
+      window.addEventListener('resize', sizeHolderToNav);
+
+      // instantiate p5
+      window.p5HeaderSketch = new p5(instance);
+    })();
+  </script>
+</body>
+</html>
