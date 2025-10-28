@@ -3,72 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Folder Tab Page</title>
+  <title>Responsive Folder Page</title>
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
-    body, html {
-      height: 100%;
+    html, body {
       width: 100%;
+      height: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
     }
 
+    /* Fullscreen responsive background */
     .folder-background {
       position: relative;
       width: 100%;
       height: 100vh;
-      background: url('A_flat,_digital_vector_illustration_showcases_a_ye.png') no-repeat center center;
-      background-size: contain;
+      background: url('my_assets/folder1.png') no-repeat center center;
+      background-size: cover; /* fills screen, crops as needed */
       background-position: center top;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
-    /* Container for the clickable tabs */
+    /* Container for the tab buttons */
     .tabs {
       position: absolute;
       top: 5%;
-      right: 8%;
+      right: 10%;
       display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
+      gap: 1.2rem;
+      z-index: 5;
     }
 
     .tab {
-      min-width: 60px;
-      padding: 0.5rem 1rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 6px 6px 0 0;
       text-align: center;
       font-weight: bold;
       color: white;
+      background-color: #999;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, opacity 0.2s ease;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      opacity: 0.95;
     }
 
     .tab:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      opacity: 1;
     }
 
-    /* Example colors for the tabs */
     .tab.red { background-color: #f76c6c; }
     .tab.blue { background-color: #4da6ff; }
     .tab.yellow { background-color: #f9d976; color: #333; }
 
-    /* Make sure everything scales smoothly */
-    @media (max-width: 600px) {
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
       .tabs {
-        top: 4%;
-        right: 6%;
-        gap: 0.5rem;
+        top: 6%;
+        right: 8%;
+        gap: 1rem;
       }
       .tab {
-        padding: 0.3rem 0.6rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .tabs {
+        top: 8%;
+        right: 5%;
+        gap: 0.7rem;
+      }
+      .tab {
+        padding: 0.4rem 0.8rem;
         font-size: 0.9rem;
       }
     }
+
   </style>
 </head>
 <body>
