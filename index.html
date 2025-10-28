@@ -37,6 +37,7 @@
         20px 25px 0 0 #fff,
         60px 30px 0 0 #fff;
       animation: float 40s linear infinite;
+      z-index: 1; /* behind everything */
     }
 
     .cloud.small {
@@ -62,34 +63,6 @@
       to { transform: translateX(100vw); }
     }
 
-    /* --- FOLDER STRUCTURE --- */
-    .folder {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 92%; /* slightly lowered top */
-      background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
-      box-shadow:
-        0 -2px 6px rgba(0,0,0,0.15),
-        inset 0 -6px 8px rgba(0,0,0,0.15);
-      overflow: hidden;
-    }
-
-    /* --- PAPER --- */
-    .paper {
-      position: absolute;
-      top: 5%;
-      left: 0;
-      width: 100%;
-      height: 7%;
-      background: #fffaf0;
-      border-radius: 0.4rem 0.4rem 0 0;
-      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-    }
-
     /* --- TABS --- */
     .tabs {
       position: absolute;
@@ -102,7 +75,7 @@
       align-items: flex-end;
       gap: 1%;
       padding-left: 2%;
-      z-index: 10;
+      z-index: 5; /* above sky, behind paper */
     }
 
     .tab {
@@ -142,9 +115,38 @@
     }
 
     /* Staggered height for realism */
-    .tab:nth-child(1) { margin-top: 1%; z-index: 3; }
-    .tab:nth-child(2) { margin-top: 3%; z-index: 2; }
-    .tab:nth-child(3) { margin-top: 5%; z-index: 1; }
+    .tab:nth-child(1) { margin-top: 1%; z-index: 7; }
+    .tab:nth-child(2) { margin-top: 3%; z-index: 6; }
+    .tab:nth-child(3) { margin-top: 5%; z-index: 5; }
+
+    /* --- FOLDER STRUCTURE --- */
+    .folder {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 92%;
+      background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      box-shadow:
+        0 -2px 6px rgba(0,0,0,0.15),
+        inset 0 -6px 8px rgba(0,0,0,0.15);
+      z-index: 2; /* behind paper and tabs */
+    }
+
+    /* --- PAPER --- */
+    .paper {
+      position: absolute;
+      top: 5%;
+      left: 0;
+      width: 100%;
+      height: 7%;
+      background: #fffaf0;
+      border-radius: 0.4rem 0.4rem 0 0;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+      z-index: 6; /* above tabs’ lower edge */
+    }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
@@ -163,18 +165,19 @@
   </style>
 </head>
 <body>
-  <!-- Sky and clouds -->
+  <!-- Sky and clouds (background layer) -->
   <div class="cloud small"></div>
   <div class="cloud large"></div>
 
-  <!-- Folder and tabs -->
-  <div class="folder">
-    <div class="tabs">
-      <div class="tab manila">Tab One</div>
-      <div class="tab green">Tab Two</div>
-      <div class="tab pink">Tab Three</div>
-    </div>
-    <div class="paper"></div>
+  <!-- Tabs (above sky, below paper) -->
+  <div class="tabs">
+    <div class="tab manila">Tab One</div>
+    <div class="tab green">Tab Two</div>
+    <div class="tab pink">Tab Three</div>
   </div>
+
+  <!-- Folder and paper -->
+  <div class="folder"></div>
+  <div class="paper"></div>
 </body>
 </html>
