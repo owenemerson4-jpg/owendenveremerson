@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retro Folder Page</title>
+  <title>Stylized File Folder Page</title>
   <style>
     /* --- RESET --- */
     * {
@@ -25,7 +25,7 @@
       position: relative;
     }
 
-    /* --- CLOUDS (simple layered shapes) --- */
+    /* --- CLOUDS --- */
     .cloud {
       position: absolute;
       background: #fff;
@@ -68,17 +68,17 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 92%; /* slightly lowered top edge */
+      height: 92%; /* slightly lowered top */
       background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
       border-top-left-radius: 1rem;
       border-top-right-radius: 1rem;
       box-shadow:
         0 -2px 6px rgba(0,0,0,0.15),
-        inset 0 -6px 8px rgba(0,0,0,0.15); /* bottom shading */
+        inset 0 -6px 8px rgba(0,0,0,0.15);
       overflow: hidden;
     }
 
-    /* --- PAPER LAYER --- */
+    /* --- PAPER --- */
     .paper {
       position: absolute;
       top: 5%;
@@ -93,21 +93,21 @@
     /* --- TABS --- */
     .tabs {
       position: absolute;
-      top: 0;
+      top: -4%; /* protrude above folder top */
       left: 0;
       width: 100%;
-      height: 9%;
+      height: 10%;
       display: flex;
       justify-content: flex-start;
       align-items: flex-end;
       gap: 1%;
       padding-left: 2%;
+      z-index: 10;
     }
 
     .tab {
       flex: 0 0 18%;
       height: 100%;
-      background: linear-gradient(to bottom, #f7e9b8, #f2d58b);
       border-top-left-radius: 0.5rem;
       border-top-right-radius: 0.5rem;
       box-shadow: 0 2px 3px rgba(0,0,0,0.2);
@@ -115,30 +115,47 @@
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      color: #4a3b0a;
       cursor: pointer;
       transition: background 0.3s, transform 0.2s;
+      border-bottom: 2px solid rgba(0,0,0,0.15);
+    }
+
+    /* Individual tab colors */
+    .tab.manila {
+      background: linear-gradient(to bottom, #f7e9b8, #f2d58b);
+      color: #4a3b0a;
+    }
+
+    .tab.green {
+      background: linear-gradient(to bottom, #b9eab0, #9ed69c);
+      color: #2d502b;
+    }
+
+    .tab.pink {
+      background: linear-gradient(to bottom, #f6c4c4, #eea8a8);
+      color: #633636;
     }
 
     .tab:hover {
-      background: linear-gradient(to bottom, #faebb9, #efd16b);
       transform: translateY(-3px);
+      filter: brightness(1.1);
     }
 
-    /* Staggered look */
-    .tab:nth-child(1) { margin-top: 1%; }
-    .tab:nth-child(2) { margin-top: 3%; }
-    .tab:nth-child(3) { margin-top: 5%; }
+    /* Staggered height for realism */
+    .tab:nth-child(1) { margin-top: 1%; z-index: 3; }
+    .tab:nth-child(2) { margin-top: 3%; z-index: 2; }
+    .tab:nth-child(3) { margin-top: 5%; z-index: 1; }
 
-    /* RESPONSIVE TWEAKS */
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       .tab { flex: 0 0 25%; font-size: 0.9rem; }
       .folder { height: 90%; }
+      .tabs { top: -5%; height: 11%; }
     }
 
     @media (max-width: 480px) {
       .tab { flex: 0 0 30%; font-size: 0.8rem; }
-      .tabs { height: 10%; }
+      .tabs { height: 12%; top: -5%; }
       .paper { top: 6%; height: 6%; }
       .folder { height: 88%; }
     }
@@ -146,16 +163,16 @@
   </style>
 </head>
 <body>
-  <!-- Sky with clouds -->
+  <!-- Sky and clouds -->
   <div class="cloud small"></div>
   <div class="cloud large"></div>
 
-  <!-- Folder content -->
+  <!-- Folder and tabs -->
   <div class="folder">
     <div class="tabs">
-      <div class="tab">Tab One</div>
-      <div class="tab">Tab Two</div>
-      <div class="tab">Tab Three</div>
+      <div class="tab manila">Tab One</div>
+      <div class="tab green">Tab Two</div>
+      <div class="tab pink">Tab Three</div>
     </div>
     <div class="paper"></div>
   </div>
