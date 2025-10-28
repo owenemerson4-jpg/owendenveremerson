@@ -1,91 +1,122 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder Background — responsive tabs</title>
-<style>
-  :root{
-    --folder-yellow: #f7bf00; /* fallback base color shown behind the PNG */
-  }
-  html,body{
-    height:100%;
-    width:100%;
-    margin:0;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responsive File Folder Background</title>
+  <style>
+    /* --- RESET --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* Full-viewport container that uses the PNG as a cover background.
-     background-color is set to a folder-yellow so any 'empty' parts
-     of the PNG are visually blended. */
-  .hero {
-    position:relative;
-    width:100%;
-    height:100vh;
-    background-color:var(--folder-yellow);
-    background-image: url("my_assets/folder1.png");
-    background-repeat:no-repeat;
-    /* cover fills screen entirely (cropping if necessary) */
-    background-size: cover;
-    /* we align to the top-center of the image — this helps tabs remain towards the top */
-    background-position: center top;
-    overflow:hidden;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    display:block;
-  }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
 
-  /* Tab controls — positioned absolutely using JS to match the folder artwork */
-  .tab {
-    position:absolute;
-    transform: translate(-50%, -50%); /* center the element on an (x,y) anchor */
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:.45rem .9rem;
-    min-width:3.2rem;
-    border-radius:6px 6px 0 0;
-    color:#fff;
-    font-weight:700;
-    font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    box-shadow:0 6px 14px rgba(0,0,0,0.14);
-    cursor:pointer;
-    user-select:none;
-    white-space:nowrap;
-    z-index:10;
-    transition:transform .12s ease, box-shadow .12s ease;
-  }
-  .tab:active{ transform: translate(-50%,-50%) translateY(1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
-  .tab:focus{ outline:3px solid rgba(0,0,0,.12); outline-offset:2px; }
+    /* --- FULL PAGE FOLDER BACKGROUND --- */
+    body {
+      background-color: #f5e0a1; /* manila tone */
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
 
-  .tab.red{ background:#ff6868; }
-  .tab.blue{ background:#1f86e1; }
-  .tab.paper{ background:#f6d9a8; color:#222; box-shadow:0 6px 14px rgba(0,0,0,0.08); }
+    /* The folder container */
+    .folder {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1);
+    }
 
-  /* make tabs slightly smaller on narrow screens */
-  @media (max-width:520px){
-    .tab{ padding:.35rem .6rem; font-size:.95rem; min-width:2.6rem; }
-  }
-  /* helpful debug outline if you want to verify alignment quickly (toggle with JS flag) */
-  .debug-outline { outline: 1px dashed rgba(0,0,0,.15); }
-</style>
+    /* The inner “paper” section peeking out */
+    .paper {
+      position: absolute;
+      top: 6%;
+      left: 0;
+      width: 100%;
+      height: 90%;
+      background: #fffaf0;
+      border-radius: 0.5rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* The tab bar container */
+    .tabs {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-end;
+      gap: 1%;
+      padding-left: 2%;
+    }
+
+    /* Each folder tab */
+    .tab {
+      flex: 0 0 18%;
+      height: 100%;
+      background: linear-gradient(to bottom, #f7e9b8, #f2d58b);
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: #4a3b0a;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .tab:hover {
+      background: linear-gradient(to bottom, #faebb9, #efd16b);
+      transform: translateY(-3px);
+    }
+
+    /* Slight stagger effect for realism */
+    .tab:nth-child(1) { margin-top: 1%; }
+    .tab:nth-child(2) { margin-top: 3%; }
+    .tab:nth-child(3) { margin-top: 5%; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .tab {
+        flex: 0 0 25%;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tab {
+        flex: 0 0 30%;
+        font-size: 0.8rem;
+      }
+      .tabs { height: 10%; }
+      .paper { top: 8%; }
+    }
+  </style>
 </head>
 <body>
-  <div class="hero" id="hero">
-    <!-- these will be positioned by script to match the three tab areas in the image -->
-    <button id="tab-red" class="tab red" aria-label="Red tab">Red</button>
-    <button id="tab-blue" class="tab blue" aria-label="Blue tab">Blue</button>
-    <button id="tab-paper" class="tab paper" aria-label="Paper tab">Paper</button>
+  <div class="folder">
+    <div class="tabs">
+      <div class="tab">Tab One</div>
+      <div class="tab">Tab Two</div>
+      <div class="tab">Tab Three</div>
+    </div>
+    <div class="paper"></div>
   </div>
-
-<script>
-/*
-  Approach:
-  - We measured the source image 'folder1.png' at development time and found:
-      original image size: 1536 x 1024 (width x height)
-      red tab centroid (in source image px):  (906, 275)
-      blue tab centroid (in source image px): (1068, 323)
-      paper tab centroid (approx center of light paper area): (720, 330)
-    These are fixed source coordinates in the PNG.
-
-  - When background-size: cover is used with `background-position: center top`,
-    the image
+</body>
+</html>
