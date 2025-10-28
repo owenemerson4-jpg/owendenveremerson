@@ -24,27 +24,27 @@
       72px 14px 0 0 #fff,
       18px 22px 0 0 #fff,
       56px 30px 0 0 #fff;
-    z-index:1; /* back-most */
+    z-index:1;
     pointer-events:none;
   }
   .cloud.small{ width:90px; height:44px; top:6%; left:8%; transform:scale(.9); animation:float 38s linear infinite; }
   .cloud.large{ width:140px; height:72px; top:12%; right:6%; transform:scale(1.1); animation:float 52s linear infinite; animation-delay:-6s;}
   @keyframes float{ from{transform:translateX(-240px)} to{transform:translateX(100vw)} }
 
-  /* ---------- BACK FOLDER LAYER (peeks behind tabs & paper) ---------- */
+  /* ---------- BACK FOLDER LAYER ---------- */
   .folder-back{
     position:absolute;
     left:0;
     bottom:0;
     width:100%;
-    height:86%; /* tall, mostly behind front */
+    height:86%;
     background: linear-gradient(to bottom, #e9d79a 0%, #e2c97f 100%);
     border-top-left-radius:14px;
     border-top-right-radius:14px;
     z-index:2;
   }
 
-  /* ---------- TABS (sit above back folder, extend into sky) ---------- */
+  /* ---------- TABS ---------- */
   .tabs{
     position:absolute;
     left:0;
@@ -84,7 +84,7 @@
   .tab:nth-child(2){ margin-top:10%; z-index:4; }
   .tab:nth-child(3){ margin-top:14%; z-index:3; }
 
-  /* ---------- PAPER (thin sliver) ---------- */
+  /* ---------- PAPER ---------- */
   .paper{
     position:absolute;
     left:0;
@@ -98,7 +98,7 @@
     pointer-events:none;
   }
 
-  /* ---------- FRONT FOLDER (topmost large cover) ---------- */
+  /* ---------- FRONT FOLDER ---------- */
   .folder-front{
     position:absolute;
     left:0;
@@ -122,7 +122,7 @@
     pointer-events:none;
   }
 
-  /* ---------- CARD STACK (right side inside folder-front) ---------- */
+  /* ---------- CARD STACK ---------- */
   .card-stack {
     position: absolute;
     right: 4%;
@@ -161,11 +161,12 @@
     border-radius: 8px;
   }
 
-  .card-stack .card:nth-child(n+2) {
-    transform: translateY(6px) scale(0.96);
-  }
+  /* Layer offsets for stacked cards */
+  .card-stack .card:nth-child(1) { transform: translateY(0px) scale(1); z-index:3; }
+  .card-stack .card:nth-child(2) { transform: translateY(6px) scale(0.96); z-index:2; }
+  .card-stack .card:nth-child(3) { transform: translateY(12px) scale(0.92); z-index:1; }
 
-  /* ---------- RESPONSIVE ADJUSTMENTS ---------- */
+  /* ---------- RESPONSIVE ---------- */
   @media (max-width: 900px){
     .tabs{ top:7%; height:13% }
     .tab{ flex:0 0 24% }
@@ -174,12 +175,7 @@
     .tab:nth-child(3){ margin-top:15% }
     .paper{ top:17% ; height:4.5% }
     .folder-front{ top:21% }
-
-    .card-stack {
-      width: 36%;
-      max-width: 220px;
-      top: 14%;
-    }
+    .card-stack { width: 36%; max-width: 220px; top: 14%; }
   }
 
   @media (max-width:480px){
@@ -190,73 +186,80 @@
     .tab:nth-child(3){ margin-top:16% }
     .paper{ top:19% ; height:4% }
     .folder-front{ top:23% }
-
-    .card-stack {
-      width: 50%;
-      max-width: 180px;
-      top: 16%;
-      right: 2%;
-    }
+    .card-stack { width: 50%; max-width: 180px; top: 16%; right: 2%; }
   }
 
-  /* small accessibility / pointer polish for tab text */
   .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0 8px }
 </style>
 </head>
 <body>
-  <!-- SKY AND CLOUDS (z-index:1) -->
+  <!-- SKY AND CLOUDS -->
   <div class="cloud small" aria-hidden="true"></div>
   <div class="cloud large" aria-hidden="true"></div>
 
-  <!-- BACK OF FOLDER (z-index:2) -->
+  <!-- BACK OF FOLDER -->
   <div class="folder-back" aria-hidden="true"></div>
 
-  <!-- TABS (z-index:3) -->
+  <!-- TABS -->
   <div class="tabs" role="presentation" aria-hidden="false">
     <div class="tab manila"><button type="button">Tab One</button></div>
     <div class="tab green"><button type="button">Tab Two</button></div>
     <div class="tab pink"><button type="button">Tab Three</button></div>
   </div>
 
-  <!-- PAPER SLIVER (z-index:4) -->
+  <!-- PAPER SLIVER -->
   <div class="paper" aria-hidden="true"></div>
 
-  <!-- FRONT FOLDER (z-index:5) -->
+  <!-- FRONT FOLDER -->
   <div class="folder-front" aria-hidden="true">
-    <!-- CARD STACK (top layer inside folder) -->
+    <!-- CARD STACK -->
     <div class="card-stack">
-      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
-      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop></video></div>
-      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
-      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
-      <!-- Add more cards as needed -->
+      <div class="card"><img src="my_homepage/image1.jpg" alt="Card 1"></div>
+      <div class="card"><video src="my_homepage/video1.mp4" muted autoplay loop></video></div>
+      <div class="card"><img src="my_homepage/image2.jpg" alt="Card 2"></div>
+      <div class="card"><img src="my_homepage/image3.jpg" alt="Card 3"></div>
     </div>
   </div>
 
   <script>
-    const cards = document.querySelectorAll('.card-stack .card');
-    let index = 0;
+    const stack = document.querySelector('.card-stack');
 
     function cycleCards() {
-      if (cards.length <= 1) return;
+      const cards = stack.querySelectorAll('.card');
+      if(cards.length <= 1) return;
 
-      const topCard = cards[index];
+      const topCard = cards[0];
+      const secondCard = cards[1];
+
+      // Slide top card out
       topCard.style.transform = 'translateX(120%) rotate(10deg)';
       topCard.style.opacity = '0';
 
-      setTimeout(() => {
+      // Move second card to front
+      secondCard.style.transform = 'translateY(0px) scale(1)';
+      secondCard.style.zIndex = 3;
+
+      // Shift remaining cards
+      for(let i = 2; i < cards.length; i++){
+        const yOffset = 6 * (i-1);
+        const scale = 1 - 0.04*(i-1);
+        cards[i].style.transform = `translateY(${yOffset}px) scale(${scale})`;
+        cards[i].style.zIndex = 3 - i;
+      }
+
+      // After animation, move top card to back
+      setTimeout(()=>{
         topCard.style.transition = 'none';
-        topCard.style.transform = 'translateY(6px) scale(0.96)';
+        const n = cards.length;
+        topCard.style.transform = `translateY(${6*(n-1)}px) scale(${1-0.04*(n-1)})`;
         topCard.style.opacity = '1';
-        topCard.parentElement.appendChild(topCard);
+        topCard.style.zIndex = 1;
+        stack.appendChild(topCard);
 
-        setTimeout(() => {
-          topCard.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
-        }, 20);
-
+        // Re-enable transition
+        void topCard.offsetWidth;
+        topCard.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
       }, 600);
-
-      index = (index + 1) % cards.length;
     }
 
     setInterval(cycleCards, 4000);
