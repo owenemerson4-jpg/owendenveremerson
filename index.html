@@ -5,186 +5,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Owen Denver Emerson — Portfolio</title>
   <meta name="description" content="Artistic Website of Owen Emerson." />
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;900&display=swap" rel="stylesheet">
-
-  <!-- p5.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-
+  <link rel="stylesheet" href="style.css">
   <style>
-    :root{
-      /* original palette (Braque-inspired) */
-      --bg:#EDDFD8;
-      --ink:#7D4D39;
-      --muted:#0066ff;
-      --link:#0a66c2;
+    :root {
+      --bg: #EDDFD8;
+      --ink: #7D4D39;
+      --muted: #0066ff;
+      --link: #0a66c2;
       --pad: clamp(14px, 2.5vw, 24px);
       --max: 980px;
       --grid-gap: clamp(8px, 1.6vw, 16px);
       --font-head: "Source Serif 4", serif;
       --font-body: "Source Serif 4", serif;
-
-      /* header color variable kept separate so JS can toggle */
-      --header-bg: #000;
-      --footer-text: var(--ink);
     }
 
-    /* dark-theme variables will be applied to body.dark-theme */
-    body.dark-theme {
-      --bg: #000;
-      --ink: #fff;
-      --muted: #fff;
-      --link: #fff;
-      --header-bg: #000;
-      --footer-text: #ccc;
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex;
+      flex-direction: column;
+      font: 16px/1.55 var(--font-body);
+      color: var(--ink);
+      background: var(--bg);
+      overflow-x: hidden;
     }
 
-    /* ---------- sticky footer layout (restored original) ---------- */
-    html, body { height: 100%; }
-    body{
-      margin:0;
-      display:flex;
-      flex-direction:column;
-      font:16px/1.55 var(--font-body);
-      color:var(--ink);
-      background:var(--bg);
-      transition: background 0.4s, color 0.4s;
-    }
-
-    main{
-      flex:1;                        /* fills remaining space */
-      max-width:var(--max);
-      margin:0 auto;
-      padding:var(--pad);
-    }
-
-    footer{
-      max-width:var(--max);
-      margin:0 auto;
-      padding:var(--pad);
-      color:var(--footer-text);
-      font-family: var(--font-body);
-      transition: color 0.4s, background 0.4s;
-    }
-
-    /* ---------- type + links ---------- */
-    h1,h2,h3,h4,h5,h6{
-      font-family:var(--font-head);
-      font-weight:900;
-      letter-spacing:.03em;
-      margin:0 0 .5rem;
-    }
-
-    a{
-      color:var(--ink);
-      text-decoration:none;
-      border-bottom:1px solid transparent;
-    }
-
-    a:hover{ border-bottom-color:currentColor; }
-
-    /* ---------- header/nav (restored original layout) ---------- */
-    header{
-      position:sticky; top:0;
-      background:var(--header-bg);
-      border-bottom:0.5px solid #eee;
-      z-index: 50; /* keep header above p5 canvas */
-      transition: background 0.4s;
-    }
-
-    .nav{
-      max-width:var(--max);
-      margin:0 auto;
-      padding:calc(var(--pad)*.8) var(--pad);
-      display:flex; align-items:center; gap:24px;
+    main {
+      flex: 1;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: var(--pad);
       position: relative;
+      z-index: 2;
     }
 
-    .brand{
-      font-family:var(--font-head);
-      font-weight:900;
-      letter-spacing:.06em;
-      color:var(--ink);
-      transition: color 0.4s;
+    footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: var(--pad);
+      color: var(--muted);
+      font-family: var(--font-body);
+      z-index: 2;
     }
 
-    .spacer{ flex:1; }
-
-    /* Icon (left of brand) */
-    .icon-btn {
-      display:flex; align-items:center; cursor:pointer; margin-right:8px;
-      z-index:60; /* above canvas and header */
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      background: #000;
+      border-bottom: 0.5px solid #eee;
+      z-index: 10;
     }
-    .icon-btn img {
-      width:32px; height:32px; object-fit:contain;
-      transition: transform 0.2s ease;
+    .nav {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: calc(var(--pad)*.8) var(--pad);
+      display: flex;
+      align-items: center;
+      gap: 24px;
     }
-    .icon-btn:hover img { transform: scale(1.08); }
-
-    /* put nav links on the right as before */
-    .nav a{ font-family:var(--font-head); font-weight:900; letter-spacing:.06em; color:var(--ink); transition: color 0.4s; }
-
-    /* ---------- cards/grid kept from your file ---------- */
-    section{ padding:calc(var(--pad)*1.25) 0; }
-
-    h1{ font-size:clamp(22px,3.2vw,30px); }
-    h2{ font-size:clamp(18px,2.4vw,22px); color:var(--muted); }
-
-    .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--grid-gap); }
-    .card{ background:#fff; border:1px solid #e8e6e2; border-radius:12px; overflow:hidden; }
-    .thumb{ aspect-ratio:4/3; width:100%; object-fit:cover; background:#eae7e2; }
-    .meta{ padding:.7rem .8rem; font-size:.9rem; color:var(--muted); }
-
-    /* ---------- header canvas holder (p5) ---------- */
-    /* canvas holder sits inside header and covers the header area, behind brand & nav items */
-    #header-canvas-holder{
-      position:absolute;
-      top:0; left:0; width:100%; height:100%;
-      pointer-events:none; /* allow clicks through to nav */
-      z-index: 10; /* behind header content but above header background (header content z is higher) */
+    .brand {
+      font-family: var(--font-head);
+      font-weight: 900;
+      letter-spacing: .06em;
+      color: white;
     }
+    .spacer { flex: 1; }
 
-    /* ensure header content sits above the canvas */
-    .nav > * { position: relative; z-index: 60; }
+    a {
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    a:hover { border-bottom-color: currentColor; }
 
-    /* responsive adjustments */
-    @media (max-width: 600px) {
-      .icon-btn img { width:24px; height:24px; }
-      .nav { gap:16px; padding: calc(var(--pad)*.6) var(--pad); }
-      .nav a { font-size: 0.95rem; }
+    /* Canvas background layer */
+    #sketch-holder canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      pointer-events: none;
     }
 
+    /* Dark mode */
+    body.dark-mode {
+      background: #000;
+      color: white;
+    }
+    body.dark-mode header {
+      background: #111;
+      color: white;
+    }
+    body.dark-mode a { color: white; }
   </style>
 </head>
-
 <body>
   <header>
     <nav class="nav">
-      <!-- Icon left of brand (preserved) -->
-      <div class="icon-btn" id="themeToggle" title="Toggle theme">
-        <img id="themeIcon" src="icon.png" alt="toggle theme icon" />
-      </div>
-
+      <img id="modeToggle" src="my_assets/39aPre.png" alt="Toggle Theme" width="32" height="32" style="cursor:pointer;">
       <div class="brand">OWEN DENVER EMERSON</div>
-
       <div class="spacer"></div>
-
-      <!-- restored nav links -->
       <a href="media.html">WORK</a>
       <a href="contact.html">CONTACT</a>
-
-      <!-- p5.js canvas holder (absolute) -->
-      <div id="header-canvas-holder" aria-hidden="true"></div>
     </nav>
   </header>
 
+  <div id="sketch-holder"></div>
+
   <main>
-    <!-- placeholder content preserved -->
     <section>
-      <!-- leave empty or put intro content -->
+      <h1></h1>
+      <p></p>
     </section>
   </main>
 
@@ -192,301 +126,90 @@
     &copy; <span id="year"></span> Owen Emerson. All Rights Reserved.
   </footer>
 
-  <!-- Audio for dark mode (plays on toggle click) -->
-  <audio id="darkModeAudio" src="my_assets/classiccrickets.wav" loop></audio>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
   <script>
-    // --- restore original year behavior ---
+    // --- YEAR UPDATE ---
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // --- theme icon behavior (hover & click) ---
-    const bodyEl = document.body;
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const audio = document.getElementById('darkModeAudio');
-
-    // set data paths (change filenames to match your assets)
-    const ICON_LIGHT = 'my_assets/39aPre.png';
-    const ICON_HOVER = 'my_assets/spiderlayer.png';
-    const ICON_DARK = 'my_assets/39aPre.png';
-
-    // hover swap
-    themeToggle.addEventListener('mouseover', () => { themeIcon.src = ICON_HOVER; });
-    themeToggle.addEventListener('mouseout', () => {
-      themeIcon.src = bodyEl.classList.contains('dark-theme') ? ICON_DARK : ICON_LIGHT;
+    // --- DARK MODE TOGGLE ---
+    const toggle = document.getElementById('modeToggle');
+    let darkMode = false;
+    toggle.addEventListener('click', () => {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
     });
 
-    // click toggles dark theme and audio; also tells the sketch to switch palette
-    let darkOn = false;
-    themeToggle.addEventListener('click', () => {
-      darkOn = !darkOn;
-      bodyEl.classList.toggle('dark-theme', darkOn);
+    // --- P5.JS SKETCH ---
+    let shapes = [];
+    let colorsLight = ['#C28D3C', '#4D5941', '#666954', '#504223', '#546E59', '#72440A', '#C8BF8F', '#C28220'];
+    let colorsDark = ['#ff5f57', '#5df4ff', '#ffe95d', '#76ff5d'];
+    let assets = [];
+    let fadeTime = 4000;
+    let nextChange = 0;
 
-      // update icon to dark or light
-      themeIcon.src = darkOn ? ICON_DARK : ICON_LIGHT;
-
-      // play/pause audio (user interaction permits play)
-      if (darkOn) {
-        audio.currentTime = 0;
-        audio.play().catch(()=>{ /* ignore play-block errors */ });
-      } else {
-        audio.pause();
-        audio.currentTime = 0;
+    function preload() {
+      // preload images (example filenames; replace with yours)
+      for (let i = 1; i <= 4; i++) {
+        assets.push(loadImage(`my_homepage/img${i}.png`));
       }
+    }
 
-      // notify p5 sketch of theme change (it will swap palettes)
-      if (typeof window.p5HeaderSketch !== 'undefined' && window.p5HeaderSketch.updateTheme) {
-        window.p5HeaderSketch.updateTheme(darkOn);
-      }
-    });
-  </script>
+    function setup() {
+      let cnv = createCanvas(windowWidth, windowHeight);
+      cnv.parent('sketch-holder');
+      noStroke();
+      generateShapes();
+      nextChange = millis() + random(4000, 8000);
+    }
 
-  <!-- p5.js sketch: transparent canvas inside header, fades + occasional media fill -->
-  <script>
-    // We'll attach the p5 instance to window.p5HeaderSketch to enable communication (updateTheme)
-    (function () {
-      // variables for sketch accessible to both instance and outside
-      let instance = function (p) {
-        const ASSET_IMG_PREFIX = 'my_homepage/'; // user-provided
-        const ASSET_IMG_LIST = ['img1.png','img2.png','img3.png','img4.png', 'img5.png', 'img6.png', 'img7.png', 'img8.png', 'img9.png', 'img10.png']; // update to match your files or load dynamically
-        const ASSET_VID_LIST = ['vid1.mp4','vid2.mp4']; // optional
+    function draw() {
+      clear(); // transparent bg
+      let pal = darkMode ? colorsDark : colorsLight;
 
-        // base (Braque) palette (muted warm tones)
-        const basePaletteRGB = [
-          [194,141,60,95],
-          [77,89,65,95],
-          [102,105,84,95],
-          [80,66,35,95],
-          [84,110,89,95],
-          [114,68,10,95],
-          [200,191,143,95],
-          [194,130,32,95]
-        ];
-
-        // retro bright palette (for dark mode)
-        const retroPaletteRGB = [
-          [255,70,70,160],     // bright red
-          [70,170,255,160],    // bright blue
-          [50,255,130,160],    // bright green
-          [255,240,80,160],    // bright yellow
-          [255,110,200,160]    // pink
-        ];
-
-        let widthTarget = 0, heightTarget = 0;
-        let pg; // offscreen buffer for drawing shapes
-        let shapes = [], prevShapes = [];
-        let palette = [], basePalette = [], retroPalette = [];
-        let mediaImgs = [], mediaVids = [];
-        let lastChange = 0;
-        let fadeDuration = 2000; // fade duration (ms)
-        let nextChangeInterval = 5000; // randomized between 4000-8000 by logic
-        let isDark = false; // theme state mirror
-        let canvasHolder, headerEl;
-
-        // preload media images & videos
-        p.preload = function () {
-          // load images - these are optional; if missing, loadImage will error.
-          // You may want to adjust the filenames to match exact names in your my_assets folder.
-          ASSET_IMG_LIST.forEach((f) => {
-            try {
-              mediaImgs.push(p.loadImage(ASSET_IMG_PREFIX + f));
-            } catch (e) {
-              // ignore missing assets
-            }
-          });
-
-          // videos: p.createVideo is not available in preload in the same way, so we'll create them in setup
-        };
-
-        p.setup = function () {
-          headerEl = document.querySelector('header .nav') || document.querySelector('header');
-          canvasHolder = document.getElementById('header-canvas-holder');
-  // determine holder size (match nav/header area exactly)
-          widthTarget = canvasHolder.offsetWidth;
-          heightTarget = canvasHolder.offsetHeight || headerEl.offsetHeight || 120;
-
-          let cnv = p.createCanvas(widthTarget, heightTarget);
-          cnv.parent('header-canvas-holder');
-          cnv.style('display:block');
-          p.clear(); // transparent
-          p.noStroke();
-
-          pg = p.createGraphics(p.width, p.height);
-          pg.clear();
-
-          // convert palettes to p.color
-          basePalette = basePaletteRGB.map((c) => p.color(c[0], c[1], c[2], c[3]));
-          retroPalette = retroPaletteRGB.map((c) => p.color(c[0], c[1], c[2], c[3]));
-          palette = basePalette.slice();
-
-          // create video elements (hidden) and loop quietly (muted)
-          ASSET_VID_LIST.forEach((f) => {
-            try {
-              let vid = p.createVideo([ASSET_IMG_PREFIX + f], () => {});
-              vid.hide();
-              vid.volume(0);
-              vid.loop();
-              mediaVids.push(vid);
-            } catch (e) {
-              // ignore
-            }
-          });
-
-          // initialize shapes
-          generateShapes();
-
-          // set initial times
-          lastChange = p.millis();
-          nextChangeInterval = p.random(4000, 8000);
-
-          // start drawing loop
-          p.loop();
-
-          // observe header size changes (in case of responsive layout)
-          window.addEventListener('resize', () => {
-            setTimeout(resizeToHolder, 50); // short debounce
-          });
-
-          // expose updateTheme to window so site script can call it
-          window.p5HeaderSketch = {
-            updateTheme: function (darkModeOn) {
-              isDark = !!darkModeOn;
-              palette = isDark ? retroPalette.slice() : basePalette.slice();
-              // force regen with fade
-              prevShapes = shapes.slice();
-              generateShapes();
-              lastChange = p.millis();
-            }
-          };
-        };
-
-        function resizeToHolder() {
-          const w = canvasHolder.offsetWidth;
-          const h = canvasHolder.offsetHeight || headerEl.offsetHeight || 120;
-          p.resizeCanvas(w, h);
-          pg = p.createGraphics(w, h);
-          pg.clear();
-          generateShapes();
+      shapes.forEach(s => {
+        s.alpha = lerp(s.alpha, s.targetAlpha, 0.02);
+        fill(s.col + hex(int(s.alpha), 2));
+        if (s.img && s.alpha > 10) {
+          tint(255, s.alpha);
+          image(s.img, s.x, s.y, s.w, s.h);
+          noTint();
+        } else {
+          ellipse(s.x, s.y, s.w, s.h);
         }
+      });
 
-        function generateShapes() {
-          prevShapes = shapes.slice();
-          shapes = [];
-          const types = ['circle','ellipse','square','rect'];
-          for (let i = 0; i < 8; i++) {
-            const type = p.random(types);
-            const w = p.random(100, 200);
-            const h = p.random(25, 75);
-            const x = p.random(p.width * 0.05, p.width * 0.95);
-            const y = p.random(p.height * 0.05, p.height * 0.95);
-            const col = p.random(palette);
-            // rare chance to use image or video
-            const useImg = (mediaImgs.length > 0) && (p.random() < 0.12); // ~12% chance
-            const useVid = (mediaVids.length > 0) && (p.random() < 0.05);  // ~5% chance
-            const img = useImg ? p.random(mediaImgs) : null;
-            const vid = useVid ? p.random(mediaVids) : null;
-            shapes.push({ x, y, w, h, type, col, img, vid });
-          }
-          // set next interval randomly between 4000 and 8000 ms (never faster than 4s)
-          nextChangeInterval = p.random(4000, 8000);
-        }
-
-        p.draw = function () {
-          p.clear(); // clear main canvas to transparent each frame
-          const now = p.millis();
-          const elapsed = now - lastChange;
-          let t = p.constrain(elapsed / fadeDuration, 0, 1);
-
-          // draw interpolated shapes into pg buffer
-          pg = p.createGraphics(p.width, p.height);
-          pg.clear();
-          pg.noStroke();
-
-          for (let i = 0; i < shapes.length; i++) {
-            const s2 = shapes[i];
-            const s1 = prevShapes[i] || s2;
-
-            const x = p.lerp(s1.x || s2.x, s2.x, t);
-            const y = p.lerp(s1.y || s2.y, s2.y, t);
-            const w = p.lerp(s1.w || s2.w, s2.w, t);
-            const h = p.lerp(s1.h || s2.h, s2.h, t);
-
-            // color interpolation
-            let c1 = s1.col || s2.col;
-            let c2 = s2.col;
-            let c = p.lerpColor(c1, c2, t);
-
-            // occasional decision to render media instead of color - small randomness so it's not deterministic but still rare
-            const renderImg = s2.img && (p.random() < 0.45);
-            const renderVid = s2.vid && (p.random() < 0.25);
-
-            if (renderImg) {
-              pg.push();
-              pg.imageMode(p.CENTER);
-              // keep aspect ratio by fitting inside shape rectangle
-              const img = s2.img;
-              let iw = img.width, ih = img.height;
-              let scale = Math.min(w / iw, h / ih);
-              if (scale <= 0) scale = 1;
-              pg.image(img, x, y, iw * scale, ih * scale);
-              pg.pop();
-            } else if (renderVid) {
-              pg.push();
-              pg.imageMode(p.CENTER);
-              const vid = s2.vid;
-              // videos are p5 media elements; draw video frame into canvas
-              try {
-                pg.image(vid, x, y, w, h);
-              } catch (e) {
-                // some browsers may not allow drawing video if not ready
-              }
-              pg.pop();
-            } else {
-              pg.fill(c);
-              if (s2.type === 'circle') pg.circle(x, y, w);
-              else if (s2.type === 'ellipse') pg.ellipse(x, y, w, h);
-              else if (s2.type === 'square') pg.square(x, y, w);
-              else pg.rect(x - w/2, y - h/2, w, h); // rect centered on x,y
-            }
-          }
-
-          // draw the composed graphics into main canvas
-          p.image(pg, 0, 0, p.width, p.height);
-
-          // once interval elapsed, create new shapes
-          if (elapsed > nextChangeInterval) {
-            lastChange = now;
-            prevShapes = shapes.slice();
-            generateShapes();
-          }
-        };
-
-        // allow external scripts to toggle palette
-        p.updateTheme = function (darkModeOn) {
-          isDark = !!darkModeOn;
-          palette = isDark ? retroPalette : basePalette;
-          prevShapes = shapes.slice();
-          generateShapes();
-          lastChange = p.millis();
-        };
-      }; // end instance
-
-      // create p5 instance attached to #header-canvas-holder
-      const holder = document.getElementById('header-canvas-holder');
-
-      // ensure holder height matches nav/header height
-      function sizeHolderToNav() {
-        const nav = document.querySelector('.nav');
-        if (!nav) return;
-        holder.style.height = nav.offsetHeight + 'px';
-        holder.style.width = nav.offsetWidth + 'px';
+      if (millis() > nextChange) {
+        generateShapes();
+        nextChange = millis() + random(4000, 8000);
       }
-      sizeHolderToNav();
-      window.addEventListener('resize', sizeHolderToNav);
+    }
 
-      // instantiate p5
-      window.p5HeaderSketch = new p5(instance);
-    })();
+    function generateShapes() {
+      shapes = [];
+      let pal = darkMode ? colorsDark : colorsLight;
+      for (let i = 0; i < 12; i++) {
+        let x = random(width);
+        let y = random(height);
+        let w = random(100, 200);
+        let h = random(25, 100);
+        let col = random(pal);
+        let img = random() < 0.2 ? random(assets) : null;
+        shapes.push({
+          x, y, w, h, col, img,
+          alpha: 0,
+          targetAlpha: 255
+        });
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+
+    function hex(n, digits) {
+      return ('0' + n.toString(16)).slice(-digits);
+    }
   </script>
 </body>
 </html>
