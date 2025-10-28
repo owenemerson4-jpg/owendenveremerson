@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder — final layered version</title>
+<title>Folder — SVG Slanted Tabs (Retro)</title>
 <style>
   /* reset */
   *{box-sizing:border-box;margin:0;padding:0}
@@ -38,65 +38,76 @@
     bottom:0;
     width:100%;
     height:86%; /* tall, mostly behind front */
-    background: linear-gradient(to bottom, #e9d79a 0%, #e2c97f 100%);
+    background: linear-gradient(to bottom, #e9d79a 0%, #e2c985 100%);
     border-top-left-radius:14px;
     border-top-right-radius:14px;
     z-index:2;
   }
 
-  /* ---------- TABS (sit above back folder, extend into sky) ---------- */
+  /* ---------- TABS (SVG buttons) ---------- */
   .tabs{
     position:absolute;
     left:0;
     width:100%;
-    /* moved down so sky remains visible; tabs protrude up into the sky */
-    top:6%;
-    height:12%;      /* tall enough so tabs extend noticeably into the sky */
+    /* shifted down so sky remains visible; tabs protrude up into the sky */
+    top:6.2%;
+    height:12%;
     padding-left:3%;
     display:flex;
     gap:1.2%;
     align-items:flex-end;
     z-index:3;
-    pointer-events:none; /* allow inner buttons to receive pointer; container inert */
   }
-  .tab {
+
+  /* Each tab is a button that contains an inline SVG that scales to the button */
+  .tab-btn{
     pointer-events:auto;
+    -webkit-tap-highlight-color: transparent;
     flex:0 0 18%;
     height:92%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-top-left-radius:10px;
-    border-top-right-radius:10px;
-    font-weight:700;
-    color:#2f2f2f;
-    box-shadow:0 4px 10px rgba(0,0,0,0.12);
-    border-bottom:2px solid rgba(0,0,0,0.14);
+    display:block;
+    border: none;
+    background: transparent;
+    padding:0;
     cursor:pointer;
+    position:relative;
     transform-origin:center bottom;
     transition:transform .18s ease, filter .12s ease;
   }
-  .tab:active{ transform:translateY(1px) }
-  .tab.manila{ background: linear-gradient(to bottom,#f7e9b8,#f2d58b); color:#4a3b0a; }
-  .tab.green{ background: linear-gradient(to bottom,#cfeec7,#b6e0a7); color:#1f4d2b }
-  .tab.pink{  background: linear-gradient(to bottom,#f7cfcf,#f0aeb0); color:#5a3131 }
+  .tab-btn:active{ transform:translateY(1px) }
+  .tab-btn:focus{ outline: 3px solid rgba(0,0,0,0.08); outline-offset:3px; border-radius:6px; }
 
-  /* Slight stagger and stacking (higher z for leftmost so it visually overlaps neighbors nicely) */
-  .tab:nth-child(1){ margin-top:6%; z-index:5; }
-  .tab:nth-child(2){ margin-top:10%; z-index:4; }
-  .tab:nth-child(3){ margin-top:14%; z-index:3; }
+  /* subtle hover raise */
+  .tab-btn:hover{ transform: translateY(-3px) }
 
-  /* ---------- PAPER (thin sliver) ----------
-     Paper sits in front of folder-back and tabs (so it tucks tabs in),
-     but behind the folder-front (so it remains a visible sliver above the front folder).
-  */
+  /* svg fills are defined inline; we still allow slight text inside button via absolute center */
+  .tab-label{
+    position:absolute;
+    left:8%;
+    right:8%;
+    top:40%;
+    transform:translateY(-50%);
+    text-align:center;
+    font-weight:700;
+    font-size:0.92rem;
+    pointer-events:none; /* let clicks pass through to button */
+    color:#2f2f2f;
+    letter-spacing:0.2px;
+  }
+
+  /* Slight stagger and stacking z order for tactile overlap */
+  .tab-btn:nth-child(1){ margin-top:6%; z-index:6; }
+  .tab-btn:nth-child(2){ margin-top:10%; z-index:5; }
+  .tab-btn:nth-child(3){ margin-top:14%; z-index:4; }
+
+  /* ---------- PAPER SLIVER ---------- */
   .paper{
     position:absolute;
     left:0;
     width:100%;
     /* sit slightly lower than the tabs area so it overlaps/tucks their bottoms */
     top:15.5%;
-    height:4.6%;              /* thin sliver */
+    height:4.6%;
     background: #fffef8;
     border-radius: 6px 6px 0 0;
     box-shadow: 0 3px 6px rgba(0,0,0,0.10);
@@ -104,18 +115,13 @@
     pointer-events:none;
   }
 
-  /* ---------- FRONT FOLDER (topmost large cover) ----------
-     Front folder sits above the paper (so paper appears as a sliver),
-     and is the highest z-index element.
-  */
+  /* ---------- FRONT FOLDER ---------- */
   .folder-front{
     position:absolute;
     left:0;
     bottom:0;
     width:100%;
-    /* front folder begins just below the paper sliver so the sliver is visible */
     top:19%;
-    /* alternative: use height instead of top; here top ensures the sliver is visible */
     background: linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
     border-top-left-radius:14px;
     border-top-right-radius:14px;
@@ -123,8 +129,6 @@
     z-index:5;
     overflow:hidden;
   }
-
-  /* small decorative crease between back and front */
   .folder-front::before{
     content:"";
     position:absolute;
@@ -137,26 +141,31 @@
   /* ---------- RESPONSIVE ADJUSTMENTS ---------- */
   @media (max-width: 900px){
     .tabs{ top:7%; height:13% }
-    .tab{ flex:0 0 24% }
-    .tab:nth-child(1){ margin-top:7% }
-    .tab:nth-child(2){ margin-top:11% }
-    .tab:nth-child(3){ margin-top:15% }
+    .tab-btn{ flex:0 0 24% }
+    .tab-btn:nth-child(1){ margin-top:7% }
+    .tab-btn:nth-child(2){ margin-top:11% }
+    .tab-btn:nth-child(3){ margin-top:15% }
     .paper{ top:17% ; height:4.5% }
     .folder-front{ top:21% }
   }
-
   @media (max-width:480px){
     .tabs{ top:8%; height:14% ; padding-left:4% }
-    .tab{ flex:0 0 30%; font-size:0.9rem }
-    .tab:nth-child(1){ margin-top:8% }
-    .tab:nth-child(2){ margin-top:12% }
-    .tab:nth-child(3){ margin-top:16% }
+    .tab-btn{ flex:0 0 30%; font-size:0.9rem }
+    .tab-btn:nth-child(1){ margin-top:8% }
+    .tab-btn:nth-child(2){ margin-top:12% }
+    .tab-btn:nth-child(3){ margin-top:16% }
     .paper{ top:19% ; height:4% }
     .folder-front{ top:23% }
   }
 
-  /* small accessibility / pointer polish for tab text */
-  .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0 8px }
+  /* label color overrides for better contrast on the light manila tab */
+  .tab-btn.manila .tab-label{ color:#4a3b0a; font-weight:700 }
+  .tab-btn.green .tab-label{ color:#184022; font-weight:700 }
+  .tab-btn.pink  .tab-label{ color:#5a3131; font-weight:700 }
+
+  /* small accessibility polish so text scales a bit */
+  @media (max-width:600px){ .tab-label{ font-size:0.85rem } }
+
 </style>
 </head>
 <body>
@@ -167,11 +176,56 @@
   <!-- BACK OF FOLDER (z-index:2) -->
   <div class="folder-back" aria-hidden="true"></div>
 
-  <!-- TABS (z-index:3) -->
+  <!-- TABS (z-index:3) - each is a button containing an inline SVG -->
   <div class="tabs" role="presentation" aria-hidden="false">
-    <div class="tab manila"><button type="button">Tab One</button></div>
-    <div class="tab green"><button type="button">Tab Two</button></div>
-    <div class="tab pink"><button type="button">Tab Three</button></div>
+    <!-- Left / manila tab -->
+    <button class="tab-btn manila" aria-label="Tab One">
+      <!-- SVG: subtle slanted top, viewBox sized to scale -->
+      <svg viewBox="0 0 200 120" preserveAspectRatio="none" width="100%" height="100%" role="img" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-manila" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#fbf1c4"/>
+            <stop offset="100%" stop-color="#f2d58b"/>
+          </linearGradient>
+          <!-- soft bevel using a faint stroke -->
+        </defs>
+        <!-- slanted trapezoid path: top is slightly slanted (subtle) -->
+        <path d="M0,120 L0,22 L150,12 L200,12 L200,120 Z" fill="url(#g-manila)" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+        <!-- gentle drop shadow rectangle (for retro look) -->
+        <rect x="4" y="76" width="192" height="36" fill="rgba(0,0,0,0.02)" rx="6"/>
+      </svg>
+      <span class="tab-label">Tab One</span>
+    </button>
+
+    <!-- Middle / pastel green -->
+    <button class="tab-btn green" aria-label="Tab Two">
+      <svg viewBox="0 0 200 120" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-green" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#dff6df"/>
+            <stop offset="100%" stop-color="#b6e0a7"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,120 L0,24 L150,14 L200,14 L200,120 Z" fill="url(#g-green)" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+        <rect x="4" y="78" width="192" height="34" fill="rgba(0,0,0,0.02)" rx="6"/>
+      </svg>
+      <span class="tab-label">Tab Two</span>
+    </button>
+
+    <!-- Right / pastel pink -->
+    <button class="tab-btn pink" aria-label="Tab Three">
+      <svg viewBox="0 0 200 120" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-pink" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#ffeef0"/>
+            <stop offset="100%" stop-color="#f0aeb0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,120 L0,26 L150,16 L200,16 L200,120 Z" fill="url(#g-pink)" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+        <rect x="4" y="80" width="192" height="32" fill="rgba(0,0,0,0.02)" rx="6"/>
+      </svg>
+      <span class="tab-label">Tab Three</span>
+    </button>
   </div>
 
   <!-- PAPER SLIVER (z-index:4) -->
@@ -179,5 +233,23 @@
 
   <!-- FRONT FOLDER (z-index:5) -->
   <div class="folder-front" aria-hidden="true"></div>
+
+  <!-- Optional: small script to add keyboard focus behavior (keeps everything accessible) -->
+  <script>
+    // allow keyboard navigation by focusing the button rather than the wrapper
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          btn.click();
+        }
+      });
+      // Example simple click handlers (replace with your navigation)
+      btn.addEventListener('click', ()=> {
+        // placeholder: remove or replace with real navigation
+        console.log(btn.querySelector('.tab-label').textContent + ' clicked');
+      });
+    });
+  </script>
 </body>
 </html>
