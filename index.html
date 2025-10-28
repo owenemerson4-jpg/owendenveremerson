@@ -3,171 +3,177 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder — Device6-inspired look</title>
+<title>Folder — Device6-inspired refined</title>
 <style>
   /* ---------- reset ---------- */
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;width:100%;overflow:hidden;font-family:Inter,system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-
-  /* ---------- BASE (textured parchment sky) ----------
-     - keep layout / z-index unchanged
-     - use a subtle parchment tone + paper texture overlay
-  */
   :root{
-    --sky-top: #efefec;    /* very light parchment */
-    --sky-bottom: #f8f7f4; /* warm cream */
-    --folder-back: #e6dac0; /* muted manila */
-    --folder-front: #e3d6a0; /* slightly aged */
-    --paper: #f9f7f2;
-    --tab-manila: #e2d49c;
-    --tab-green: #b7c7a4;
-    --tab-pink:  #dcb6b6;
-    --line: rgba(48,48,48,0.12); /* charcoal at low opacity */
-    --accent: #8a2f2a; /* warm muted accent used sparingly */
+    --sky-top:#bcd6e0;   /* pale blue */
+    --sky-bottom:#eaf1f4;/* cream */
+    --folder-back:#e6dac0;
+    --folder-front:#e3d6a0;
+    --paper:#f9f7f2;
+    --tab-manila:#e2d49c;
+    --tab-green:#b7c7a4;
+    --tab-pink:#dcb6b6;
+    --line:rgba(38,38,38,0.12);
+    --accent:#8a2f2a;
+    --signal:rgba(44,44,44,0.14);
   }
 
+  /* ---------- SKY (textured + animated) ---------- */
   body{
-    position:relative;
     background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 100%);
-    /* paper-grain texture overlay (low opacity) */
+    position:relative;
   }
-  /* texture overlay using pseudo element so we don't change z-index or structure */
   body::after{
+    /* global subtle paper grain over full viewport */
     content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    background-image: url('my_homepage/textures/paper-grain.jpeg');
+    position:fixed; inset:0; pointer-events:none;
+    background-image: url('my_homepage/textures/paper-grain.png');
     background-repeat:repeat;
-    opacity:0.06; /* subtle grain */
+    opacity:0.06;
     mix-blend-mode: overlay;
     z-index:0;
   }
 
-  /* ---------- BACK FOLDER LAYER (flat color + subtle texture) ---------- */
+  /* container for the sky waves and clouds (keeps z-index low so rest stays on top) */
+  .sky-layer{
+    position:absolute; left:0; right:0; top:0; height:18%; z-index:0; overflow:hidden;
+    pointer-events:none;
+  }
+
+  /* Slight vignette to make sky feel layered */
+  .sky-bg{
+    position:absolute; inset:0; background: linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0.0)); pointer-events:none;
+  }
+
+  /* SVG signal lines (wavy) - we'll animate the group horizontally */
+  .signal-wrap{ position:absolute; inset:0; overflow:visible; }
+  svg.signals{ width:100%; height:100%; display:block; }
+
+  /* individual signal groups move in opposite directions and slightly different speeds */
+  .signal-group.a{ animation:slideLtoR 30s linear infinite; transform-origin:center; opacity:0.95; }
+  .signal-group.b{ animation:slideRtoL 30s linear infinite; transform-origin:center; opacity:0.85; }
+
+  @keyframes slideLtoR{ from{transform:translateX(-12%)} to{transform:translateX(12%)} }
+  @keyframes slideRtoL{ from{transform:translateX(12%)} to{transform:translateX(-12%)} }
+
+  svg.signals path{ fill:none; stroke:var(--signal); stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; opacity:0.95; filter: drop-shadow(0 0 0 rgba(0,0,0,0.02)); }
+
+  /* clouds - simple soft shapes moving slowly */
+  .cloud{
+    position:absolute;
+    background: #ffffff;
+    border-radius:50%;
+    opacity:0.80;
+    filter: blur(0.6px);
+    box-shadow:
+      30px 6px 0 0 #fff,
+      58px 12px 0 0 #fff,
+      16px 18px 0 0 #fff;
+    pointer-events:none;
+  }
+  .cloud.c1{ width:110px; height:50px; top:6%; left:6%; transform:scale(.9); opacity:0.75; animation:cloudMove1 30s linear infinite; }
+  .cloud.c2{ width:85px; height:36px; top:3%; right:10%; transform:scale(.85); opacity:0.68; animation:cloudMove2 36s linear infinite; animation-delay:-6s; }
+  .cloud.c3{ width:120px; height:54px; top:10%; left:40%; transform:scale(.7); opacity:0.6; animation:cloudMove3 46s linear infinite; animation-delay:-12s; }
+
+  @keyframes cloudMove1{ from{transform:translateX(-8%) scale(.9)} to{transform:translateX(8%) scale(.9)} }
+  @keyframes cloudMove2{ from{transform:translateX(10%) scale(.85)} to{transform:translateX(-10%) scale(.85)} }
+  @keyframes cloudMove3{ from{transform:translateX(-6%) scale(.7)} to{transform:translateX(6%) scale(.7)} }
+
+  /* ---------- BACK FOLDER LAYER (flat with texture) ---------- */
   .folder-back{
-    position:absolute;
-    left:0;
-    bottom:0;
-    width:100%;
-    height:86%;
-    background: var(--folder-back);
-    border-top-left-radius:14px;
-    border-top-right-radius:14px;
-    z-index:2;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 10px 24px rgba(30,30,30,0.06);
-    /* very soft inner noise to read as printed paper */
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.01), rgba(0,0,0,0.01));
-  }
-
-  /* ---------- TABS (flat tones, crisp 1px lines, matured) ---------- */
-  .tabs{
-    position:absolute;
-    left:0;
-    width:100%;
-    top:6%;
-    height:12%;
-    padding-left:3%;
-    display:flex;
-    gap:1.2%;
-    align-items:flex-end;
-    z-index:3;
-    pointer-events:none;
-  }
-  .tab {
-    pointer-events:auto;
-    flex:0 0 18%;
-    height:92%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-    font-weight:700;
-    color: #2f2f2f;
-    box-shadow: 0 6px 18px rgba(20,20,20,0.04);
-    border-bottom:1px solid var(--line);
-    cursor:pointer;
-    transform-origin:center bottom;
-    transition: transform .16s ease, filter .14s ease;
-    background-clip: padding-box;
-    /* subtle texture on tabs */
+    position:absolute; left:0; bottom:0; width:100%; height:86%;
+    background: var(--folder-back); border-top-left-radius:14px; border-top-right-radius:14px; z-index:2;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 24px rgba(18,18,18,0.05);
     background-image: url('my_homepage/textures/paper-grain.png');
-    background-repeat: repeat;
-    background-size: 300px 300px;
-    background-position: center;
-    opacity:0.98;
-  }
-  .tab:active{ transform:translateY(1px) }
-  .tab.manila{ background-color: var(--tab-manila); color: #3d372d; letter-spacing:0.04em; font-size:0.98rem; }
-  .tab.green{ background-color: var(--tab-green); color:#243a25; letter-spacing:0.04em; font-size:0.98rem }
-  .tab.pink{  background-color: var(--tab-pink); color:#4c3030; letter-spacing:0.04em; font-size:0.98rem }
-
-  .tab:nth-child(1){ margin-top:6%; z-index:5; border-right:1px solid rgba(0,0,0,0.04); }
-  .tab:nth-child(2){ margin-top:10%; z-index:4; border-right:1px solid rgba(0,0,0,0.04); }
-  .tab:nth-child(3){ margin-top:14%; z-index:3; }
-
-  /* ---------- PAPER (thin sliver) ----------
-     - give it a subtle charcoal 1px outline and very slight emboss
-  */
-  .paper{
-    position:absolute;
-    left:0;
-    width:100%;
-    top:15.5%;
-    height:4.6%;
-    background: var(--paper);
-    border-radius: 6px 6px 0 0;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6);
-    border-top: 1px solid rgba(0,0,0,0.02);
-    border-bottom: 1px solid var(--line);
-    z-index:4;
-    pointer-events:none;
-  }
-
-  /* ---------- FRONT FOLDER (flat with texture overlay & thin lines) ---------- */
-  .folder-front{
-    position:absolute;
-    left:0;
-    bottom:0;
-    width:100%;
-    top:19%;
-    background: var(--folder-front);
-    border-top-left-radius:14px;
-    border-top-right-radius:14px;
-    z-index:5;
-    overflow:hidden;
-    box-shadow: 0 -6px 20px rgba(20,20,20,0.06), inset 0 -6px 18px rgba(0,0,0,0.03);
-    /* texture overlay */
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.00), rgba(0,0,0,0.00)), url('my_homepage/textures/paper-grain.png');
-    background-repeat: repeat;
-    background-size: 600px 600px;
+    background-repeat:repeat;
+    background-size:600px 600px;
     background-blend-mode: overlay;
   }
-  .folder-front::before{
-    content:"";
-    position:absolute;
-    left:0; right:0; top:-8px;
-    height:8px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.00));
-    pointer-events:none;
+
+  /* ---------- TABS (bolder text, fill more of the tab) ---------- */
+  .tabs{
+    position:absolute; left:0; width:100%; top:6%; height:12%; padding-left:3%; display:flex; gap:1.2%; align-items:flex-end; z-index:3; pointer-events:none;
+  }
+  .tab{
+    pointer-events:auto; flex:0 0 18%; height:92%; display:flex; align-items:center; justify-content:center;
+    border-top-left-radius:8px; border-top-right-radius:8px; font-weight:700; color:#2f2f2f; box-shadow: 0 6px 18px rgba(16,16,16,0.04);
+    border-bottom:1px solid var(--line); cursor:pointer; transform-origin:center bottom; transition:transform .14s ease, filter .12s ease;
+    background-image: url('my_homepage/textures/paper-grain.png'); background-repeat:repeat; background-size:300px 300px; background-position:center;
+    padding:0 6px;
+  }
+  .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0; font-weight:700; color:inherit; }
+  /* increase text size and make it fill more of the tab */
+  .tab button{ font-size:1.08rem; letter-spacing:0.06em; text-transform:uppercase; line-height:1; }
+  .tab.manila{ background-color:var(--tab-manila); color:#3b352a; }
+  .tab.green{ background-color:var(--tab-green); color:#243a25; }
+  .tab.pink{ background-color:var(--tab-pink); color:#4c3030; }
+
+  .tab:nth-child(1){ margin-top:6%; z-index:5; }
+  .tab:nth-child(2){ margin-top:10%; z-index:4; }
+  .tab:nth-child(3){ margin-top:14%; z-index:3; }
+
+  /* ---------- PAPER SLIVER (thin, crisp) ---------- */
+  .paper{ position:absolute; left:0; width:100%; top:15.5%; height:4.6%; background:var(--paper); border-radius:6px 6px 0 0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6); border-bottom:1px solid var(--line); z-index:4; pointer-events:none; }
+
+  /* ---------- FRONT FOLDER (manila flat + ornamentation) ---------- */
+  .folder-front{
+    position:absolute; left:0; bottom:0; width:100%; top:19%; background:var(--folder-front);
+    border-top-left-radius:14px; border-top-right-radius:14px; box-shadow: 0 -6px 20px rgba(18,18,18,0.06), inset 0 -8px 14px rgba(0,0,0,0.03);
+    z-index:5; overflow:hidden;
+    background-image: url('my_homepage/textures/paper-grain.png');
+    background-repeat:repeat;
+    background-size:700px 700px;
+    background-blend-mode: overlay;
   }
 
-  /* subtle thin guide lines to evoke Device6 schematic feel */
-  .folder-front::after{
-    content:"";
-    position:absolute;
-    left:6%;
-    top:6%;
-    width:1px;
-    height:28px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.02));
-    opacity:0.5;
-    pointer-events:none;
-    transform: rotate(-6deg);
+  /* thin decorative edge / pulsing line */
+  .folder-front .edge-line{
+    position:absolute; left:4%; right:4%; top:6.6%; height:1px; background: linear-gradient(90deg, rgba(0,0,0,0.12), rgba(0,0,0,0.02));
+    opacity:0.9; pointer-events:none; animation:edgePulse 10s ease-in-out infinite;
+  }
+  @keyframes edgePulse{
+    0%{opacity:.85} 50%{opacity:.95} 100%{opacity:.85}
   }
 
-  /* ---------- CARD STACK (unchanged position / z-index) ---------- */
+  /* small glyph container (typographic/symbolic flourishes) */
+  .glyphs {
+    position:absolute; left:6%; right:6%; top:18%; bottom:8%; pointer-events:none; z-index:5; overflow:visible;
+    /* leaving the central area visually lighter — glyphs mostly around edges */
+  }
+
+  .glyph {
+    position:absolute; color:rgba(34,34,34,0.12); font-family: "Inter", system-ui, Arial, sans-serif;
+    font-weight:700; mix-blend-mode:multiply;
+    will-change: transform, opacity;
+    transform-origin:center;
+  }
+
+  /* different glyph styles and subtle multi-directional drift */
+  .g1{ left:8%; top:24%; font-size:34px; opacity:0.12; animation:drift1 26s linear infinite; }
+  .g2{ left:22%; top:10%; font-size:18px; opacity:0.10; animation:drift2 32s linear infinite; transform:rotate(6deg); }
+  .g3{ right:20%; top:18%; font-size:22px; opacity:0.09; animation:drift3 28s linear infinite; }
+  .g4{ left:14%; bottom:22%; font-size:16px; opacity:0.08; animation:drift4 34s linear infinite; }
+  .g5{ right:12%; bottom:30%; font-size:26px; opacity:0.10; animation:drift5 30s linear infinite; transform:rotate(-8deg); }
+
+  /* glyphs are typographic: using characters and UI-like symbols */
+  /* You can change these characters to whatever symbolic glyphs you prefer */
+  /* subtle translate/rotate keyframes for each glyph for multi-directional effect */
+  @keyframes drift1{ 0%{transform:translate(0,0) rotate(0)} 50%{transform:translate(6px, -4px) rotate(0.6deg)} 100%{transform:translate(0,0) rotate(0)} }
+  @keyframes drift2{ 0%{transform:translate(0,0) rotate(6deg)} 50%{transform:translate(-4px,6px) rotate(6.6deg)} 100%{transform:translate(0,0) rotate(6deg)} }
+  @keyframes drift3{ 0%{transform:translate(0,0)} 50%{transform:translate(-6px,2px)} 100%{transform:translate(0,0)} }
+  @keyframes drift4{ 0%{transform:translate(0,0)} 50%{transform:translate(5px,5px) rotate(-3deg)} 100%{transform:translate(0,0)} }
+  @keyframes drift5{ 0%{transform:translate(0,0)} 50%{transform:translate(-3px,-6px) rotate(2deg)} 100%{transform:translate(0,0)} }
+
+  /* allow glyph opacity shimmering occasionally */
+  .glyph.shimmer{ animation: shimmerOpacity 14s ease-in-out infinite; }
+  @keyframes shimmerOpacity{ 0%{opacity:.09} 50%{opacity:.14} 100%{opacity:.09} }
+
+  /* ---------- CARD STACK (unchanged position & z-index) ---------- */
   .card-stack {
     position: absolute;
     right: 4%;
@@ -184,14 +190,8 @@
     transition: transform 0.36s ease, box-shadow 0.36s ease;
   }
 
-  /* Hover lift: use warm accent glow (very subtle) */
-  .card-stack:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 36px rgba(20,20,20,0.08);
-  }
-  .card-stack:hover .card:nth-child(1) {
-    filter: drop-shadow(0 0 10px rgba(138,47,42,0.06)) brightness(1.02);
-  }
+  .card-stack:hover { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(18,18,18,0.08); }
+  .card-stack:hover .card:nth-child(1) { filter: drop-shadow(0 0 10px rgba(138,47,42,0.06)) brightness(1.02); }
 
   .card {
     position: absolute;
@@ -199,7 +199,7 @@
     height: 100%;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 6px 18px rgba(20,20,20,0.06);
+    box-shadow: 0 6px 18px rgba(18,18,18,0.06);
     background: #fff;
     display: flex;
     align-items: center;
@@ -208,51 +208,57 @@
     transition: transform 0.6s ease, opacity 0.6s ease, filter 0.28s ease;
   }
 
-  .card img, .card video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 8px;
-  }
+  .card img, .card video { width:100%; height:100%; object-fit:cover; display:block; border-radius:8px; }
 
-  /* layered offsets for realism (kept same offsets) */
   .card-stack .card:nth-child(1) { transform: translateY(0px) scale(1); z-index:3; }
   .card-stack .card:nth-child(2) { transform: translateY(6px) scale(0.96); z-index:2; }
   .card-stack .card:nth-child(3) { transform: translateY(12px) scale(0.92); z-index:1; }
 
-  /* ---------- RESPONSIVE tweaks (kept positions same) ---------- */
-  @media (max-width: 900px){
-    .tabs{ top:7%; height:13% }
-    .tab{ flex:0 0 24% }
-    .tab:nth-child(1){ margin-top:7% }
-    .tab:nth-child(2){ margin-top:11% }
-    .tab:nth-child(3){ margin-top:15% }
-    .paper{ top:17% ; height:4.5% }
-    .folder-front{ top:21% }
-    .card-stack { width: 36%; max-width: 220px; top: 14%; }
+  /* ---------- Responsiveness (positions kept) ---------- */
+  @media (max-width:900px){
+    .tabs{ top:7%; height:13% } .tab{ flex:0 0 24% }
+    .tab:nth-child(1){ margin-top:7% } .tab:nth-child(2){ margin-top:11% } .tab:nth-child(3){ margin-top:15% }
+    .paper{ top:17%; height:4.5% } .folder-front{ top:21% } .card-stack { width:36%; max-width:220px; top:14%; }
   }
-
   @media (max-width:480px){
-    .tabs{ top:8%; height:14% ; padding-left:4% }
-    .tab{ flex:0 0 30%; font-size:0.98rem }
-    .tab:nth-child(1){ margin-top:8% }
-    .tab:nth-child(2){ margin-top:12% }
-    .tab:nth-child(3){ margin-top:16% }
-    .paper{ top:19% ; height:4% }
-    .folder-front{ top:23% }
-    .card-stack { width: 50%; max-width: 180px; top: 16%; right: 2%; }
+    .tabs{ top:8%; height:14%; padding-left:4% } .tab{ flex:0 0 30%; font-size:0.98rem }
+    .tab:nth-child(1){ margin-top:8% } .tab:nth-child(2){ margin-top:12% } .tab:nth-child(3){ margin-top:16% }
+    .paper{ top:19%; height:4% } .folder-front{ top:23% } .card-stack { width:50%; max-width:180px; top:16%; right:2%; }
   }
 
-  /* small pointer polish for tab text */
-  .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0 8px; font-weight:600; color:inherit; }
+  .tab button{ text-transform:uppercase; font-weight:700; letter-spacing:0.06em; }
 </style>
 </head>
 <body>
-  <!-- folder-back remains but clouds removed per updated style -->
+  <!-- SKY LAYER (wavy signal lines + clouds) -->
+  <div class="sky-layer" aria-hidden="true">
+    <div class="sky-bg"></div>
+
+    <!-- wavy signal SVGs -->
+    <div class="signal-wrap" aria-hidden="true">
+      <svg class="signals" viewBox="0 0 1600 200" preserveAspectRatio="none" aria-hidden="true">
+        <g class="signal-group a" transform="translate(0,0)">
+          <path d="M-50 110 C 150 60 350 160 550 120 C 750 80 950 140 1150 110 C 1350 80 1550 140 1750 110" />
+        </g>
+        <g class="signal-group b" transform="translate(0,40)">
+          <path d="M-100 60 C 100 90 300 40 500 80 C 700 120 900 70 1100 100 C 1300 130 1500 70 1700 100" />
+        </g>
+        <g class="signal-group a" transform="translate(0,80)">
+          <path d="M-200 130 C 0 110 200 150 400 130 C 600 110 800 150 1000 130 C 1200 110 1400 150 1600 130" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- a few small soft clouds -->
+    <div class="cloud c1" aria-hidden="true"></div>
+    <div class="cloud c2" aria-hidden="true"></div>
+    <div class="cloud c3" aria-hidden="true"></div>
+  </div>
+
+  <!-- BACK FOLDER (keeps same position/z-index) -->
   <div class="folder-back" aria-hidden="true"></div>
 
-  <!-- TABS (positions + z-index preserved) -->
+  <!-- TABS (positions & z-index preserved; enlarged text) -->
   <div class="tabs" role="presentation" aria-hidden="false">
     <div class="tab manila"><button type="button">Tab One</button></div>
     <div class="tab green"><button type="button">Tab Two</button></div>
@@ -264,6 +270,18 @@
 
   <!-- FRONT FOLDER -->
   <div class="folder-front" aria-hidden="true">
+    <!-- thin edge line / ornament -->
+    <div class="edge-line" aria-hidden="true"></div>
+
+    <!-- symbolic/typographic glyphs (subtle, drifting) -->
+    <div class="glyphs" aria-hidden="true">
+      <div class="glyph g1 shimmer">A</div>
+      <div class="glyph g2">⟶</div>
+      <div class="glyph g3">6</div>
+      <div class="glyph g4">◊</div>
+      <div class="glyph g5">#</div>
+    </div>
+
     <!-- CARD STACK (top layer inside folder) -->
     <div class="card-stack">
       <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
@@ -273,43 +291,59 @@
     </div>
   </div>
 
-  <script>
-    /* Card stack cycling (keeps behavior unchanged) */
-    const stack = document.querySelector('.card-stack');
-    let intervalTime = 4000;
+<script>
+/* ---------------- card stack cycling (unchanged behavior) ---------------- */
+const stack = document.querySelector('.card-stack');
+let intervalTime = 4000;
 
-    function cycleCards() {
-      const cards = stack.querySelectorAll('.card');
-      if(cards.length <= 1) return;
-      const top = cards[0];
-      const second = cards[1];
+function cycleCards() {
+  const cards = stack.querySelectorAll('.card');
+  if(cards.length <= 1) return;
+  const top = cards[0];
+  const second = cards[1];
 
-      top.style.transform = 'translateX(120%) rotate(10deg)';
-      top.style.opacity = '0';
+  top.style.transform = 'translateX(120%) rotate(10deg)';
+  top.style.opacity = '0';
 
-      second.style.transform = 'translateY(0px) scale(1)';
-      second.style.zIndex = 3;
+  second.style.transform = 'translateY(0px) scale(1)';
+  second.style.zIndex = 3;
 
-      for(let i=2;i<cards.length;i++){
-        const y = 6*(i-1);
-        const scale = 1-0.04*(i-1);
-        cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-        cards[i].style.zIndex = 3-i;
-      }
+  for(let i=2;i<cards.length;i++){
+    const y = 6*(i-1);
+    const scale = 1-0.04*(i-1);
+    cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+    cards[i].style.zIndex = 3-i;
+  }
 
-      setTimeout(()=>{
-        top.style.transition='none';
-        const n=cards.length;
-        top.style.transform=`translateY(${6*(n-1)}px) scale(${1-0.04*(n-1)})`;
-        top.style.opacity='1';
-        top.style.zIndex=1;
-        stack.appendChild(top);
-        void top.offsetWidth;
-        top.style.transition='transform 0.6s ease, opacity 0.6s ease';
-      },600);
-    }
+  setTimeout(()=>{
+    top.style.transition='none';
+    const n=cards.length;
+    top.style.transform=`translateY(${6*(n-1)}px) scale(${1-0.04*(n-1)})`;
+    top.style.opacity='1';
+    top.style.zIndex=1;
+    stack.appendChild(top);
+    void top.offsetWidth;
+    top.style.transition='transform 0.6s ease, opacity 0.6s ease';
+  },600);
+}
+setInterval(cycleCards, intervalTime);
 
-    setInterval(cycleCards, intervalTime);
-  </script>
+/* ---------------- subtle extra motion for signal lines (SVG groups already animated via CSS) ---------------- */
+/* nothing needed in JS for signals because CSS keyframes handle translate */
+
+/* ---------------- optional: slightly randomize cloud opacity/positions on load for variety ---------------- */
+(function randomizeClouds(){
+  const clouds = document.querySelectorAll('.cloud');
+  clouds.forEach((c, i) => {
+    c.style.opacity = 0.55 + Math.random()*0.25;
+    // small random x offsets initially
+    c.style.transform += ` translateX(${(Math.random()*4-2)}%)`;
+  });
+})();
+
+/* ---------------- glyph subtle parallax drift handled by CSS keyframes ---------------- */
+/* if you want to tweak speeds/directions, modify the CSS keyframes above */
+
+</script>
 </body>
 </html>
