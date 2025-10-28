@@ -1,101 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Responsive Folder Page</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Folder Background — responsive tabs</title>
+<style>
+  :root{
+    --folder-yellow: #f7bf00; /* fallback base color shown behind the PNG */
+  }
+  html,body{
+    height:100%;
+    width:100%;
+    margin:0;
+  }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
+  /* Full-viewport container that uses the PNG as a cover background.
+     background-color is set to a folder-yellow so any 'empty' parts
+     of the PNG are visually blended. */
+  .hero {
+    position:relative;
+    width:100%;
+    height:100vh;
+    background-color:var(--folder-yellow);
+    background-image: url("my_assets/folder1.png");
+    background-repeat:no-repeat;
+    /* cover fills screen entirely (cropping if necessary) */
+    background-size: cover;
+    /* we align to the top-center of the image — this helps tabs remain towards the top */
+    background-position: center top;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:block;
+  }
 
-    /* Fullscreen responsive background */
-    .folder-background {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      background: url('my_assets/folder1.png') no-repeat center center;
-      background-size: cover; /* fills screen, crops as needed */
-      background-position: center top;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
+  /* Tab controls — positioned absolutely using JS to match the folder artwork */
+  .tab {
+    position:absolute;
+    transform: translate(-50%, -50%); /* center the element on an (x,y) anchor */
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:.45rem .9rem;
+    min-width:3.2rem;
+    border-radius:6px 6px 0 0;
+    color:#fff;
+    font-weight:700;
+    font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    box-shadow:0 6px 14px rgba(0,0,0,0.14);
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+    z-index:10;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .tab:active{ transform: translate(-50%,-50%) translateY(1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+  .tab:focus{ outline:3px solid rgba(0,0,0,.12); outline-offset:2px; }
 
-    /* Container for the tab buttons */
-    .tabs {
-      position: absolute;
-      top: 5%;
-      right: 10%;
-      display: flex;
-      gap: 1.2rem;
-      z-index: 5;
-    }
+  .tab.red{ background:#ff6868; }
+  .tab.blue{ background:#1f86e1; }
+  .tab.paper{ background:#f6d9a8; color:#222; box-shadow:0 6px 14px rgba(0,0,0,0.08); }
 
-    .tab {
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px 6px 0 0;
-      text-align: center;
-      font-weight: bold;
-      color: white;
-      background-color: #999;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease, opacity 0.2s ease;
-      cursor: pointer;
-      opacity: 0.95;
-    }
-
-    .tab:hover {
-      transform: translateY(-3px);
-      opacity: 1;
-    }
-
-    .tab.red { background-color: #f76c6c; }
-    .tab.blue { background-color: #4da6ff; }
-    .tab.yellow { background-color: #f9d976; color: #333; }
-
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-      .tabs {
-        top: 6%;
-        right: 8%;
-        gap: 1rem;
-      }
-      .tab {
-        padding: 0.5rem 1rem;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .tabs {
-        top: 8%;
-        right: 5%;
-        gap: 0.7rem;
-      }
-      .tab {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.9rem;
-      }
-    }
-
-  </style>
+  /* make tabs slightly smaller on narrow screens */
+  @media (max-width:520px){
+    .tab{ padding:.35rem .6rem; font-size:.95rem; min-width:2.6rem; }
+  }
+  /* helpful debug outline if you want to verify alignment quickly (toggle with JS flag) */
+  .debug-outline { outline: 1px dashed rgba(0,0,0,.15); }
+</style>
 </head>
 <body>
-  <div class="folder-background">
-    <div class="tabs">
-      <div class="tab red">Tab 1</div>
-      <div class="tab blue">Tab 2</div>
-      <div class="tab yellow">Tab 3</div>
-    </div>
+  <div class="hero" id="hero">
+    <!-- these will be positioned by script to match the three tab areas in the image -->
+    <button id="tab-red" class="tab red" aria-label="Red tab">Red</button>
+    <button id="tab-blue" class="tab blue" aria-label="Blue tab">Blue</button>
+    <button id="tab-paper" class="tab paper" aria-label="Paper tab">Paper</button>
   </div>
-</body>
-</html>
+
+<script>
+/*
+  Approach:
+  - We measured the source image 'folder1.png' at development time and found:
+      original image size: 1536 x 1024 (width x height)
+      red tab centroid (in source image px):  (906, 275)
+      blue tab centroid (in source image px): (1068, 323)
+      paper tab centroid (approx center of light paper area): (720, 330)
+    These are fixed source coordinates in the PNG.
+
+  - When background-size: cover is used with `background-position: center top`,
+    the image
