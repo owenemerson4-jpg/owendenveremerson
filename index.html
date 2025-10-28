@@ -3,103 +3,268 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder — final layered version</title>
+<title>Folder — Device6-inspired look</title>
 <style>
+  /* ---------- reset ---------- */
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;width:100%;overflow:hidden;font-family:Inter,system-ui,Arial,sans-serif}
+  html,body{height:100%;width:100%;overflow:hidden;font-family:Inter,system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
-  body{
-    background: linear-gradient(to bottom, #bfe5ff 0%, #eaf7ff 80%);
-    position:relative;
+  /* ---------- BASE (textured parchment sky) ----------
+     - keep layout / z-index unchanged
+     - use a subtle parchment tone + paper texture overlay
+  */
+  :root{
+    --sky-top: #efefec;    /* very light parchment */
+    --sky-bottom: #f8f7f4; /* warm cream */
+    --folder-back: #e6dac0; /* muted manila */
+    --folder-front: #e3d6a0; /* slightly aged */
+    --paper: #f9f7f2;
+    --tab-manila: #e2d49c;
+    --tab-green: #b7c7a4;
+    --tab-pink:  #dcb6b6;
+    --line: rgba(48,48,48,0.12); /* charcoal at low opacity */
+    --accent: #8a2f2a; /* warm muted accent used sparingly */
   }
 
-  .cloud{position:absolute;background:#fff;border-radius:50%;opacity:.85;
-    box-shadow:36px 8px 0 0 #fff,72px 14px 0 0 #fff,18px 22px 0 0 #fff,56px 30px 0 0 #fff;
-    z-index:1;pointer-events:none;}
-  .cloud.small{ width:90px; height:44px; top:6%; left:8%; transform:scale(.9); animation:float 38s linear infinite; }
-  .cloud.large{ width:140px; height:72px; top:12%; right:6%; transform:scale(1.1); animation:float 52s linear infinite; animation-delay:-6s;}
-  @keyframes float{ from{transform:translateX(-240px)} to{transform:translateX(100vw)} }
+  body{
+    position:relative;
+    background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 100%);
+    /* paper-grain texture overlay (low opacity) */
+  }
+  /* texture overlay using pseudo element so we don't change z-index or structure */
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image: url('my_homepage/textures/paper-grain.jpeg');
+    background-repeat:repeat;
+    opacity:0.06; /* subtle grain */
+    mix-blend-mode: overlay;
+    z-index:0;
+  }
 
-  .folder-back{position:absolute;left:0;bottom:0;width:100%;height:86%;background: linear-gradient(to bottom, #e9d79a 0%, #e2c97f 100%);border-top-left-radius:14px;border-top-right-radius:14px;z-index:2;}
+  /* ---------- BACK FOLDER LAYER (flat color + subtle texture) ---------- */
+  .folder-back{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:86%;
+    background: var(--folder-back);
+    border-top-left-radius:14px;
+    border-top-right-radius:14px;
+    z-index:2;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 10px 24px rgba(30,30,30,0.06);
+    /* very soft inner noise to read as printed paper */
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.01), rgba(0,0,0,0.01));
+  }
 
-  .tabs{position:absolute;left:0;width:100%;top:6%;height:12%;padding-left:3%;display:flex;gap:1.2%;align-items:flex-end;z-index:3;pointer-events:none;}
-  .tab {pointer-events:auto;flex:0 0 18%;height:92%;display:flex;align-items:center;justify-content:center;border-top-left-radius:10px;border-top-right-radius:10px;font-weight:700;color:#2f2f2f;box-shadow:0 4px 10px rgba(0,0,0,0.12);border-bottom:2px solid rgba(0,0,0,0.14);cursor:pointer;transform-origin:center bottom;transition:transform .18s ease, filter .12s ease;}
+  /* ---------- TABS (flat tones, crisp 1px lines, matured) ---------- */
+  .tabs{
+    position:absolute;
+    left:0;
+    width:100%;
+    top:6%;
+    height:12%;
+    padding-left:3%;
+    display:flex;
+    gap:1.2%;
+    align-items:flex-end;
+    z-index:3;
+    pointer-events:none;
+  }
+  .tab {
+    pointer-events:auto;
+    flex:0 0 18%;
+    height:92%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+    font-weight:700;
+    color: #2f2f2f;
+    box-shadow: 0 6px 18px rgba(20,20,20,0.04);
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    transform-origin:center bottom;
+    transition: transform .16s ease, filter .14s ease;
+    background-clip: padding-box;
+    /* subtle texture on tabs */
+    background-image: url('my_homepage/textures/paper-grain.png');
+    background-repeat: repeat;
+    background-size: 300px 300px;
+    background-position: center;
+    opacity:0.98;
+  }
   .tab:active{ transform:translateY(1px) }
-  .tab.manila{ background: linear-gradient(to bottom,#f7e9b8,#f2d58b); color:#4a3b0a; }
-  .tab.green{ background: linear-gradient(to bottom,#cfeec7,#b6e0a7); color:#1f4d2b }
-  .tab.pink{  background: linear-gradient(to bottom,#f7cfcf,#f0aeb0); color:#5a3131 }
-  .tab:nth-child(1){ margin-top:6%; z-index:5; }
-  .tab:nth-child(2){ margin-top:10%; z-index:4; }
+  .tab.manila{ background-color: var(--tab-manila); color: #3d372d; letter-spacing:0.04em; font-size:0.98rem; }
+  .tab.green{ background-color: var(--tab-green); color:#243a25; letter-spacing:0.04em; font-size:0.98rem }
+  .tab.pink{  background-color: var(--tab-pink); color:#4c3030; letter-spacing:0.04em; font-size:0.98rem }
+
+  .tab:nth-child(1){ margin-top:6%; z-index:5; border-right:1px solid rgba(0,0,0,0.04); }
+  .tab:nth-child(2){ margin-top:10%; z-index:4; border-right:1px solid rgba(0,0,0,0.04); }
   .tab:nth-child(3){ margin-top:14%; z-index:3; }
 
-  .paper{position:absolute;left:0;width:100%;top:15.5%;height:4.6%;background: #fffef8;border-radius: 6px 6px 0 0;box-shadow: 0 3px 6px rgba(0,0,0,0.10);z-index:4;pointer-events:none;}
+  /* ---------- PAPER (thin sliver) ----------
+     - give it a subtle charcoal 1px outline and very slight emboss
+  */
+  .paper{
+    position:absolute;
+    left:0;
+    width:100%;
+    top:15.5%;
+    height:4.6%;
+    background: var(--paper);
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6);
+    border-top: 1px solid rgba(0,0,0,0.02);
+    border-bottom: 1px solid var(--line);
+    z-index:4;
+    pointer-events:none;
+  }
 
-  .folder-front{position:absolute;left:0;bottom:0;width:100%;top:19%;background: linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);border-top-left-radius:14px;border-top-right-radius:14px;box-shadow: 0 -6px 20px rgba(0,0,0,0.12), inset 0 -8px 14px rgba(0,0,0,0.06);z-index:5;overflow:hidden;}
-  .folder-front::before{content:"";position:absolute;left:0;right:0;top:-8px;height:8px;background: linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.00));pointer-events:none;}
+  /* ---------- FRONT FOLDER (flat with texture overlay & thin lines) ---------- */
+  .folder-front{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    top:19%;
+    background: var(--folder-front);
+    border-top-left-radius:14px;
+    border-top-right-radius:14px;
+    z-index:5;
+    overflow:hidden;
+    box-shadow: 0 -6px 20px rgba(20,20,20,0.06), inset 0 -6px 18px rgba(0,0,0,0.03);
+    /* texture overlay */
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.00), rgba(0,0,0,0.00)), url('my_homepage/textures/paper-grain.png');
+    background-repeat: repeat;
+    background-size: 600px 600px;
+    background-blend-mode: overlay;
+  }
+  .folder-front::before{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:-8px;
+    height:8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.00));
+    pointer-events:none;
+  }
 
-  /* CARD STACK */
-  .card-stack { position: absolute; right: 4%; top: 12%; width: 28%; max-width: 300px; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; perspective: 1000px; z-index: 6; }
-  .card { position: absolute; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.18); background: #fff; display: flex; align-items: center; justify-content: center; backface-visibility: hidden; transition: transform 0.6s ease, opacity 0.6s ease; }
-  .card img, .card video { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 8px; }
+  /* subtle thin guide lines to evoke Device6 schematic feel */
+  .folder-front::after{
+    content:"";
+    position:absolute;
+    left:6%;
+    top:6%;
+    width:1px;
+    height:28px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.02));
+    opacity:0.5;
+    pointer-events:none;
+    transform: rotate(-6deg);
+  }
+
+  /* ---------- CARD STACK (unchanged position / z-index) ---------- */
+  .card-stack {
+    position: absolute;
+    right: 4%;
+    top: 12%;
+    width: 28%;
+    max-width: 300px;
+    aspect-ratio: 3/4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    perspective: 1000px;
+    z-index: 6;
+    transition: transform 0.36s ease, box-shadow 0.36s ease;
+  }
+
+  /* Hover lift: use warm accent glow (very subtle) */
+  .card-stack:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 36px rgba(20,20,20,0.08);
+  }
+  .card-stack:hover .card:nth-child(1) {
+    filter: drop-shadow(0 0 10px rgba(138,47,42,0.06)) brightness(1.02);
+  }
+
+  .card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(20,20,20,0.06);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    transition: transform 0.6s ease, opacity 0.6s ease, filter 0.28s ease;
+  }
+
+  .card img, .card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+  }
+
+  /* layered offsets for realism (kept same offsets) */
   .card-stack .card:nth-child(1) { transform: translateY(0px) scale(1); z-index:3; }
   .card-stack .card:nth-child(2) { transform: translateY(6px) scale(0.96); z-index:2; }
   .card-stack .card:nth-child(3) { transform: translateY(12px) scale(0.92); z-index:1; }
 
-  /* 2D Retro Dial */
-  .dial-container {
-    position: absolute;
-    right: 42%;
-    top: 20%;
-    width: 15%;
-    aspect-ratio:1/1;
-    z-index:7;
-    cursor: grab;
-  }
-  .dial {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: conic-gradient(#f7e9b8 0deg 60deg, #cfeec7 60deg 120deg, #f7cfcf 120deg 180deg, #f7e9b8 180deg 240deg, #cfeec7 240deg 300deg, #f7cfcf 300deg 360deg);
-    box-shadow: inset -4px -4px 8px rgba(255,255,255,0.4), inset 4px 4px 8px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.2);
-    display:flex; align-items:center; justify-content:center;
-    transition: transform 0.05s linear;
+  /* ---------- RESPONSIVE tweaks (kept positions same) ---------- */
+  @media (max-width: 900px){
+    .tabs{ top:7%; height:13% }
+    .tab{ flex:0 0 24% }
+    .tab:nth-child(1){ margin-top:7% }
+    .tab:nth-child(2){ margin-top:11% }
+    .tab:nth-child(3){ margin-top:15% }
+    .paper{ top:17% ; height:4.5% }
+    .folder-front{ top:21% }
+    .card-stack { width: 36%; max-width: 220px; top: 14%; }
   }
 
-  /* Tick marks for retro-tech look */
-  .dial::before {
-    content:"";
-    position:absolute; width:90%; height:90%; border-radius:50%;
-    background:
-      repeating-conic-gradient(rgba(0,0,0,0.05) 0deg 10deg, transparent 10deg 30deg);
+  @media (max-width:480px){
+    .tabs{ top:8%; height:14% ; padding-left:4% }
+    .tab{ flex:0 0 30%; font-size:0.98rem }
+    .tab:nth-child(1){ margin-top:8% }
+    .tab:nth-child(2){ margin-top:12% }
+    .tab:nth-child(3){ margin-top:16% }
+    .paper{ top:19% ; height:4% }
+    .folder-front{ top:23% }
+    .card-stack { width: 50%; max-width: 180px; top: 16%; right: 2%; }
   }
 
-  @media (max-width:900px){ .card-stack { width: 36%; max-width: 220px; } .dial-container { width:12%; right: 38%; top:22%; } }
-  @media (max-width:480px){ .card-stack { width: 50%; max-width: 180px; right: 2%; top:16%; } .dial-container { width:10%; right:50%; top:20%; } }
-
-  .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0 8px }
+  /* small pointer polish for tab text */
+  .tab button{ all:unset; cursor:pointer; display:block; width:100%; height:100%; text-align:center; padding:0 8px; font-weight:600; color:inherit; }
 </style>
 </head>
 <body>
-  <div class="cloud small" aria-hidden="true"></div>
-  <div class="cloud large" aria-hidden="true"></div>
-
+  <!-- folder-back remains but clouds removed per updated style -->
   <div class="folder-back" aria-hidden="true"></div>
 
+  <!-- TABS (positions + z-index preserved) -->
   <div class="tabs" role="presentation" aria-hidden="false">
     <div class="tab manila"><button type="button">Tab One</button></div>
     <div class="tab green"><button type="button">Tab Two</button></div>
     <div class="tab pink"><button type="button">Tab Three</button></div>
   </div>
 
+  <!-- PAPER SLIVER -->
   <div class="paper" aria-hidden="true"></div>
 
+  <!-- FRONT FOLDER -->
   <div class="folder-front" aria-hidden="true">
-    <!-- 2D DIAL -->
-    <div class="dial-container">
-      <div class="dial"></div>
-    </div>
-
-    <!-- CARD STACK -->
+    <!-- CARD STACK (top layer inside folder) -->
     <div class="card-stack">
       <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
       <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop></video></div>
@@ -108,86 +273,43 @@
     </div>
   </div>
 
-<script>
-const stack = document.querySelector('.card-stack');
-let intervalTime = 4000;
-let intervalId;
+  <script>
+    /* Card stack cycling (keeps behavior unchanged) */
+    const stack = document.querySelector('.card-stack');
+    let intervalTime = 4000;
 
-function cycleCards() {
-  const cards = stack.querySelectorAll('.card');
-  if(cards.length <= 1) return;
-  const top = cards[0];
-  const second = cards[1];
+    function cycleCards() {
+      const cards = stack.querySelectorAll('.card');
+      if(cards.length <= 1) return;
+      const top = cards[0];
+      const second = cards[1];
 
-  top.style.transform = 'translateX(120%) rotate(10deg)';
-  top.style.opacity = '0';
+      top.style.transform = 'translateX(120%) rotate(10deg)';
+      top.style.opacity = '0';
 
-  second.style.transform = 'translateY(0px) scale(1)';
-  second.style.zIndex = 3;
+      second.style.transform = 'translateY(0px) scale(1)';
+      second.style.zIndex = 3;
 
-  for(let i=2;i<cards.length;i++){
-    const y = 6*(i-1);
-    const scale = 1-0.04*(i-1);
-    cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-    cards[i].style.zIndex = 3-i;
-  }
+      for(let i=2;i<cards.length;i++){
+        const y = 6*(i-1);
+        const scale = 1-0.04*(i-1);
+        cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+        cards[i].style.zIndex = 3-i;
+      }
 
-  setTimeout(()=>{
-    top.style.transition='none';
-    const n=cards.length;
-    top.style.transform=`translateY(${6*(n-1)}px) scale(${1-0.04*(n-1)})`;
-    top.style.opacity='1';
-    top.style.zIndex=1;
-    stack.appendChild(top);
-    void top.offsetWidth;
-    top.style.transition='transform 0.6s ease, opacity 0.6s ease';
-  },600);
-}
+      setTimeout(()=>{
+        top.style.transition='none';
+        const n=cards.length;
+        top.style.transform=`translateY(${6*(n-1)}px) scale(${1-0.04*(n-1)})`;
+        top.style.opacity='1';
+        top.style.zIndex=1;
+        stack.appendChild(top);
+        void top.offsetWidth;
+        top.style.transition='transform 0.6s ease, opacity 0.6s ease';
+      },600);
+    }
 
-function startInterval(){
-  clearInterval(intervalId);
-  intervalId = setInterval(cycleCards, intervalTime);
-}
-startInterval();
-
-// DIAL DRAG & INERTIA (1-axis)
-const dial = document.querySelector('.dial');
-let isDragging=false, lastX=0, velocity=0, rotation=0, inertiaInterval;
-
-function updateCardStackSpeed(v){
-  const minInterval=500, maxInterval=4000;
-  const clamped=Math.min(50,Math.max(0,v));
-  intervalTime=maxInterval-(clamped/50)*(maxInterval-minInterval);
-  startInterval();
-}
-
-dial.addEventListener('pointerdown', e=>{
-  isDragging=true;
-  lastX=e.clientX;
-  if(inertiaInterval) clearInterval(inertiaInterval);
-  dial.setPointerCapture(e.pointerId);
-});
-
-dial.addEventListener('pointermove', e=>{
-  if(!isDragging) return;
-  const dx = e.clientX - lastX;
-  lastX = e.clientX;
-  rotation += dx;
-  dial.style.transform = `rotate(${rotation}deg)`;
-  velocity = dx;
-  updateCardStackSpeed(Math.abs(dx));
-});
-
-dial.addEventListener('pointerup', e=>{
-  isDragging=false;
-  inertiaInterval = setInterval(()=>{
-    velocity *= 0.95;
-    rotation += velocity;
-    dial.style.transform = `rotate(${rotation}deg)`;
-    updateCardStackSpeed(Math.abs(velocity));
-    if(Math.abs(velocity)<0.5) clearInterval(inertiaInterval);
-  },16);
-});
-</script>
+    setInterval(cycleCards, intervalTime);
+  </script>
 </body>
 </html>
