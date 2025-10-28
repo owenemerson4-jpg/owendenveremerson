@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stylized File Folder Page</title>
+  <title>Realistic File Folder Page</title>
   <style>
     /* --- RESET --- */
     * {
@@ -37,13 +37,13 @@
         20px 25px 0 0 #fff,
         60px 30px 0 0 #fff;
       animation: float 40s linear infinite;
-      z-index: 1; /* behind everything */
+      z-index: 1; /* background layer */
     }
 
     .cloud.small {
       width: 80px;
       height: 40px;
-      top: 3%;
+      top: 5%;
       left: 10%;
       animation-delay: -10s;
       transform: scale(0.8);
@@ -52,7 +52,7 @@
     .cloud.large {
       width: 120px;
       height: 60px;
-      top: 8%;
+      top: 10%;
       left: 70%;
       animation-delay: -5s;
       transform: scale(1.2);
@@ -63,10 +63,23 @@
       to { transform: translateX(100vw); }
     }
 
+    /* --- BACK FOLDER (behind paper and tabs) --- */
+    .folder-back {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 92%;
+      background: linear-gradient(to bottom, #e8d59a 0%, #e1c985 100%);
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      z-index: 2; /* behind paper and tabs */
+    }
+
     /* --- TABS --- */
     .tabs {
       position: absolute;
-      top: -4%; /* protrude above folder top */
+      top: 8%; /* shifted down to leave visible sky */
       left: 0;
       width: 100%;
       height: 10%;
@@ -75,7 +88,7 @@
       align-items: flex-end;
       gap: 1%;
       padding-left: 2%;
-      z-index: 5; /* above sky, behind paper */
+      z-index: 3; /* above back folder, below paper */
     }
 
     .tab {
@@ -93,7 +106,6 @@
       border-bottom: 2px solid rgba(0,0,0,0.15);
     }
 
-    /* Individual tab colors */
     .tab.manila {
       background: linear-gradient(to bottom, #f7e9b8, #f2d58b);
       color: #4a3b0a;
@@ -114,70 +126,74 @@
       filter: brightness(1.1);
     }
 
-    /* Staggered height for realism */
-    .tab:nth-child(1) { margin-top: 1%; z-index: 7; }
-    .tab:nth-child(2) { margin-top: 3%; z-index: 6; }
-    .tab:nth-child(3) { margin-top: 5%; z-index: 5; }
+    .tab:nth-child(1) { margin-top: 1%; z-index: 5; }
+    .tab:nth-child(2) { margin-top: 3%; z-index: 4; }
+    .tab:nth-child(3) { margin-top: 5%; z-index: 3; }
 
-    /* --- FOLDER STRUCTURE --- */
-    .folder {
+    /* --- PAPER --- */
+    .paper {
+      position: absolute;
+      top: 13%;
+      left: 0;
+      width: 100%;
+      height: 6%;
+      background: #fffaf0;
+      border-radius: 0.4rem 0.4rem 0 0;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+      z-index: 4; /* above back folder and tabs, below front folder */
+    }
+
+    /* --- FRONT FOLDER (main visible body) --- */
+    .folder-front {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 92%;
+      height: 88%;
       background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
       border-top-left-radius: 1rem;
       border-top-right-radius: 1rem;
       box-shadow:
         0 -2px 6px rgba(0,0,0,0.15),
         inset 0 -6px 8px rgba(0,0,0,0.15);
-      z-index: 2; /* behind paper and tabs */
+      z-index: 5; /* topmost layer */
     }
 
-    /* --- PAPER --- */
-    .paper {
-      position: absolute;
-      top: 5%;
-      left: 0;
-      width: 100%;
-      height: 7%;
-      background: #fffaf0;
-      border-radius: 0.4rem 0.4rem 0 0;
-      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-      z-index: 6; /* above tabs’ lower edge */
-    }
-
-    /* RESPONSIVE */
+    /* RESPONSIVE TWEAKS */
     @media (max-width: 768px) {
       .tab { flex: 0 0 25%; font-size: 0.9rem; }
-      .folder { height: 90%; }
-      .tabs { top: -5%; height: 11%; }
+      .tabs { top: 9%; height: 11%; }
+      .paper { top: 14%; height: 6%; }
     }
 
     @media (max-width: 480px) {
       .tab { flex: 0 0 30%; font-size: 0.8rem; }
-      .tabs { height: 12%; top: -5%; }
-      .paper { top: 6%; height: 6%; }
-      .folder { height: 88%; }
+      .tabs { top: 10%; height: 12%; }
+      .paper { top: 15%; height: 5%; }
+      .folder-front { height: 86%; }
     }
 
   </style>
 </head>
 <body>
-  <!-- Sky and clouds (background layer) -->
+  <!-- Sky and clouds -->
   <div class="cloud small"></div>
   <div class="cloud large"></div>
 
-  <!-- Tabs (above sky, below paper) -->
+  <!-- Back folder layer -->
+  <div class="folder-back"></div>
+
+  <!-- Tabs -->
   <div class="tabs">
     <div class="tab manila">Tab One</div>
     <div class="tab green">Tab Two</div>
     <div class="tab pink">Tab Three</div>
   </div>
 
-  <!-- Folder and paper -->
-  <div class="folder"></div>
+  <!-- Paper layer -->
   <div class="paper"></div>
+
+  <!-- Front folder layer -->
+  <div class="folder-front"></div>
 </body>
 </html>
