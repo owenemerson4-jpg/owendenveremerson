@@ -49,15 +49,14 @@
     position:absolute;
     left:0;
     width:100%;
-    /* moved down so sky remains visible; tabs protrude up into the sky */
     top:6%;
-    height:12%;      /* tall enough so tabs extend noticeably into the sky */
+    height:12%;
     padding-left:3%;
     display:flex;
     gap:1.2%;
     align-items:flex-end;
     z-index:3;
-    pointer-events:none; /* allow inner buttons to receive pointer; container inert */
+    pointer-events:none;
   }
   .tab {
     pointer-events:auto;
@@ -81,22 +80,17 @@
   .tab.green{ background: linear-gradient(to bottom,#cfeec7,#b6e0a7); color:#1f4d2b }
   .tab.pink{  background: linear-gradient(to bottom,#f7cfcf,#f0aeb0); color:#5a3131 }
 
-  /* Slight stagger and stacking (higher z for leftmost so it visually overlaps neighbors nicely) */
   .tab:nth-child(1){ margin-top:6%; z-index:5; }
   .tab:nth-child(2){ margin-top:10%; z-index:4; }
   .tab:nth-child(3){ margin-top:14%; z-index:3; }
 
-  /* ---------- PAPER (thin sliver) ----------
-     Paper sits in front of folder-back and tabs (so it tucks tabs in),
-     but behind the folder-front (so it remains a visible sliver above the front folder).
-  */
+  /* ---------- PAPER (thin sliver) ---------- */
   .paper{
     position:absolute;
     left:0;
     width:100%;
-    /* sit slightly lower than the tabs area so it overlaps/tucks their bottoms */
     top:15.5%;
-    height:4.6%;              /* thin sliver */
+    height:4.6%;
     background: #fffef8;
     border-radius: 6px 6px 0 0;
     box-shadow: 0 3px 6px rgba(0,0,0,0.10);
@@ -104,18 +98,13 @@
     pointer-events:none;
   }
 
-  /* ---------- FRONT FOLDER (topmost large cover) ----------
-     Front folder sits above the paper (so paper appears as a sliver),
-     and is the highest z-index element.
-  */
+  /* ---------- FRONT FOLDER (topmost large cover) ---------- */
   .folder-front{
     position:absolute;
     left:0;
     bottom:0;
     width:100%;
-    /* front folder begins just below the paper sliver so the sliver is visible */
     top:19%;
-    /* alternative: use height instead of top; here top ensures the sliver is visible */
     background: linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
     border-top-left-radius:14px;
     border-top-right-radius:14px;
@@ -124,7 +113,6 @@
     overflow:hidden;
   }
 
-  /* small decorative crease between back and front */
   .folder-front::before{
     content:"";
     position:absolute;
@@ -132,6 +120,49 @@
     height:8px;
     background: linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.00));
     pointer-events:none;
+  }
+
+  /* ---------- CARD STACK (right side inside folder-front) ---------- */
+  .card-stack {
+    position: absolute;
+    right: 4%;
+    top: 12%;
+    width: 28%;
+    max-width: 300px;
+    aspect-ratio: 3/4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    perspective: 1000px;
+    z-index: 6;
+  }
+
+  .card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+  }
+
+  .card img, .card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .card-stack .card:nth-child(n+2) {
+    transform: translateY(6px) scale(0.96);
   }
 
   /* ---------- RESPONSIVE ADJUSTMENTS ---------- */
@@ -143,6 +174,12 @@
     .tab:nth-child(3){ margin-top:15% }
     .paper{ top:17% ; height:4.5% }
     .folder-front{ top:21% }
+
+    .card-stack {
+      width: 36%;
+      max-width: 220px;
+      top: 14%;
+    }
   }
 
   @media (max-width:480px){
@@ -153,6 +190,13 @@
     .tab:nth-child(3){ margin-top:16% }
     .paper{ top:19% ; height:4% }
     .folder-front{ top:23% }
+
+    .card-stack {
+      width: 50%;
+      max-width: 180px;
+      top: 16%;
+      right: 2%;
+    }
   }
 
   /* small accessibility / pointer polish for tab text */
@@ -178,6 +222,44 @@
   <div class="paper" aria-hidden="true"></div>
 
   <!-- FRONT FOLDER (z-index:5) -->
-  <div class="folder-front" aria-hidden="true"></div>
+  <div class="folder-front" aria-hidden="true">
+    <!-- CARD STACK (top layer inside folder) -->
+    <div class="card-stack">
+      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
+      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop></video></div>
+      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
+      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
+      <!-- Add more cards as needed -->
+    </div>
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll('.card-stack .card');
+    let index = 0;
+
+    function cycleCards() {
+      if (cards.length <= 1) return;
+
+      const topCard = cards[index];
+      topCard.style.transform = 'translateX(120%) rotate(10deg)';
+      topCard.style.opacity = '0';
+
+      setTimeout(() => {
+        topCard.style.transition = 'none';
+        topCard.style.transform = 'translateY(6px) scale(0.96)';
+        topCard.style.opacity = '1';
+        topCard.parentElement.appendChild(topCard);
+
+        setTimeout(() => {
+          topCard.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+        }, 20);
+
+      }, 600);
+
+      index = (index + 1) % cards.length;
+    }
+
+    setInterval(cycleCards, 4000);
+  </script>
 </body>
 </html>
