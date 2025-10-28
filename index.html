@@ -1,228 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Owen Denver Emerson Portfolio</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Owen Denver Emerson — Portfolio</title>
+  <meta name="description" content="Artistic Website of Owen Emerson." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;900&display=swap" rel="stylesheet">
+
+  <!-- p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
   <style>
-    :root {
-      --color1: #c28d3c;
-      --color2: #4d5941;
-      --color3: #666954;
-      --color4: #504223;
-      --color5: #546e59;
-      --color6: #72440a;
-      --color7: #c8bf8f;
-      --color8: #c28220;
+    :root{
+      /* original palette (Braque-inspired) */
+      --bg:#EDDFD8;
+      --ink:#7D4D39;
+      --muted:#0066ff;
+      --link:#0a66c2;
+      --pad: clamp(14px, 2.5vw, 24px);
+      --max: 980px;
+      --grid-gap: clamp(8px, 1.6vw, 16px);
+      --font-head: "Source Serif 4", serif;
+      --font-body: "Source Serif 4", serif;
+
+      /* header color variable kept separate so JS can toggle */
+      --header-bg: #000;
+      --footer-text: var(--ink);
     }
 
-    body {
-      margin: 0;
-      font-family: "Cormorant Garamond Bold 700", serif;
-      background: var(--color7);
-      color: var(--color4);
-      transition: background 1s, color 1s;
+    /* dark-theme variables will be applied to body.dark-theme */
+    body.dark-theme {
+      --bg: #000;
+      --ink: #fff;
+      --muted: #fff;
+      --link: #fff;
+      --header-bg: #000;
+      --footer-text: #ccc;
     }
 
-    header {
+    /* ---------- sticky footer layout (restored original) ---------- */
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      font:16px/1.55 var(--font-body);
+      color:var(--ink);
+      background:var(--bg);
+      transition: background 0.4s, color 0.4s;
+    }
+
+    main{
+      flex:1;                        /* fills remaining space */
+      max-width:var(--max);
+      margin:0 auto;
+      padding:var(--pad);
+    }
+
+    footer{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:var(--pad);
+      color:var(--footer-text);
+      font-family: var(--font-body);
+      transition: color 0.4s, background 0.4s;
+    }
+
+    /* ---------- type + links ---------- */
+    h1,h2,h3,h4,h5,h6{
+      font-family:var(--font-head);
+      font-weight:900;
+      letter-spacing:.03em;
+      margin:0 0 .5rem;
+    }
+
+    a{
+      color:var(--ink);
+      text-decoration:none;
+      border-bottom:1px solid transparent;
+    }
+
+    a:hover{ border-bottom-color:currentColor; }
+
+    /* ---------- header/nav (restored original layout) ---------- */
+    header{
+      position:sticky; top:0;
+      background:var(--header-bg);
+      border-bottom:0.5px solid #eee;
+      z-index: 50; /* keep header above p5 canvas */
+      transition: background 0.4s;
+    }
+
+    .nav{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:calc(var(--pad)*.8) var(--pad);
+      display:flex; align-items:center; gap:24px;
       position: relative;
-      text-align: center;
-      background: var(--color3);
-      padding: 4em 0;
-      overflow: hidden;
-      transition: background 1s;
     }
 
-    header h1 {
-      font-size: 2.4em;
-      font-weight: 900;
-      letter-spacing: 0.06em;
-      position: relative;
-      z-index: 10;
+    .brand{
+      font-family:var(--font-head);
+      font-weight:900;
+      letter-spacing:.06em;
+      color:var(--ink);
+      transition: color 0.4s;
     }
 
-    .theme-toggle {
-      position: absolute;
-      left: 1.5em;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 60px;
-      height: 60px;
-      cursor: pointer;
-      z-index: 11;
-      transition: transform 0.2s ease-in-out;
+    .spacer{ flex:1; }
+
+    /* Icon (left of brand) */
+    .icon-btn {
+      display:flex; align-items:center; cursor:pointer; margin-right:8px;
+      z-index:60; /* above canvas and header */
+    }
+    .icon-btn img {
+      width:32px; height:32px; object-fit:contain;
+      transition: transform 0.2s ease;
+    }
+    .icon-btn:hover img { transform: scale(1.08); }
+
+    /* put nav links on the right as before */
+    .nav a{ font-family:var(--font-head); font-weight:900; letter-spacing:.06em; color:var(--ink); transition: color 0.4s; }
+
+    /* ---------- cards/grid kept from your file ---------- */
+    section{ padding:calc(var(--pad)*1.25) 0; }
+
+    h1{ font-size:clamp(22px,3.2vw,30px); }
+    h2{ font-size:clamp(18px,2.4vw,22px); color:var(--muted); }
+
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--grid-gap); }
+    .card{ background:#fff; border:1px solid #e8e6e2; border-radius:12px; overflow:hidden; }
+    .thumb{ aspect-ratio:4/3; width:100%; object-fit:cover; background:#eae7e2; }
+    .meta{ padding:.7rem .8rem; font-size:.9rem; color:var(--muted); }
+
+    /* ---------- header canvas holder (p5) ---------- */
+    /* canvas holder sits inside header and covers the header area, behind brand & nav items */
+    #header-canvas-holder{
+      position:absolute;
+      top:0; left:0; width:100%; height:100%;
+      pointer-events:none; /* allow clicks through to nav */
+      z-index: 10; /* behind header content but above header background (header content z is higher) */
     }
 
-    .theme-toggle:hover {
-      transform: translateY(-50%) scale(1.1);
-    }
+    /* ensure header content sits above the canvas */
+    .nav > * { position: relative; z-index: 60; }
 
-    footer {
-      text-align: center;
-      padding: 1em 0;
-      background: var(--color2);
-      color: var(--color7);
-      transition: background 1s, color 1s;
-    }
-
-    #p5-holder {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    body.dark-mode {
-      background: #000;
-      color: #fff;
-    }
-
-    body.dark-mode header {
-      background: #000;
-    }
-
-    body.dark-mode footer {
-      background: #111;
-      color: #ccc;
-    }
-
+    /* responsive adjustments */
     @media (max-width: 600px) {
-      header h1 { font-size: 1.8em; }
-      .theme-toggle { width: 45px; height: 45px; }
+      .icon-btn img { width:24px; height:24px; }
+      .nav { gap:16px; padding: calc(var(--pad)*.6) var(--pad); }
+      .nav a { font-size: 0.95rem; }
     }
+
   </style>
 </head>
 
 <body>
-  <header id="main-header">
-    <img src="my_assets/39aPre.png"
-         data-hover="my_assets/spiderlayer.png"
-         data-alt="my_assets/39aPre.png"
-         class="theme-toggle"
-         id="themeToggle"
-         alt="toggle theme" />
+  <header>
+    <nav class="nav">
+      <!-- Icon left of brand (preserved) -->
+      <div class="icon-btn" id="themeToggle" title="Toggle theme">
+        <img id="themeIcon" src="icon.png" alt="toggle theme icon" />
+      </div>
 
-    <h1>Owen Denver Emerson</h1>
+      <div class="brand">OWEN DENVER EMERSON</div>
 
-    <div id="p5-holder"></div>
+      <div class="spacer"></div>
+
+      <!-- restored nav links -->
+      <a href="media.html">WORK</a>
+      <a href="contact.html">CONTACT</a>
+
+      <!-- p5.js canvas holder (absolute) -->
+      <div id="header-canvas-holder" aria-hidden="true"></div>
+    </nav>
   </header>
 
-  <footer>&copy; 2025 Owen Denver Emerson</footer>
+  <main>
+    <!-- placeholder content preserved -->
+    <section>
+      <!-- leave empty or put intro content -->
+    </section>
+  </main>
 
+  <footer>
+    &copy; <span id="year"></span> Owen Emerson. All Rights Reserved.
+  </footer>
+
+  <!-- Audio for dark mode (plays on toggle click) -->
   <audio id="darkModeAudio" src="my_assets/classiccrickets.wav" loop></audio>
 
   <script>
-    // --- THEME TOGGLE ---
-    const body = document.body;
-    const header = document.getElementById("main-header");
-    const icon = document.getElementById("themeToggle");
-    const audio = document.getElementById("darkModeAudio");
-    let isDark = false;
+    // --- restore original year behavior ---
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    icon.addEventListener("mouseover", () => icon.src = icon.dataset.hover);
-    icon.addEventListener("mouseout", () => icon.src = isDark ? icon.dataset.alt : "my_assets/39aPre.png");
-    icon.addEventListener("click", () => {
-      isDark = !isDark;
-      icon.src = isDark ? icon.dataset.alt : "my_assets/39aPre.png";
-      body.classList.toggle("dark-mode", isDark);
+    // --- theme icon behavior (hover & click) ---
+    const bodyEl = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const audio = document.getElementById('darkModeAudio');
 
-      // update p5 color palette
-      updatePalette(isDark);
+    // set data paths (change filenames to match your assets)
+    const ICON_LIGHT = 'my_assets/39aPre.png';
+    const ICON_HOVER = 'my_assets/spiderlayer.png';
+    const ICON_DARK = 'my_assets/39aPre.png';
 
-      if (isDark) {
-        audio.play();
+    // hover swap
+    themeToggle.addEventListener('mouseover', () => { themeIcon.src = ICON_HOVER; });
+    themeToggle.addEventListener('mouseout', () => {
+      themeIcon.src = bodyEl.classList.contains('dark-theme') ? ICON_DARK : ICON_LIGHT;
+    });
+
+    // click toggles dark theme and audio; also tells the sketch to switch palette
+    let darkOn = false;
+    themeToggle.addEventListener('click', () => {
+      darkOn = !darkOn;
+      bodyEl.classList.toggle('dark-theme', darkOn);
+
+      // update icon to dark or light
+      themeIcon.src = darkOn ? ICON_DARK : ICON_LIGHT;
+
+      // play/pause audio (user interaction permits play)
+      if (darkOn) {
+        audio.currentTime = 0;
+        audio.play().catch(()=>{ /* ignore play-block errors */ });
       } else {
         audio.pause();
         audio.currentTime = 0;
       }
+
+      // notify p5 sketch of theme change (it will swap palettes)
+      if (typeof window.p5HeaderSketch !== 'undefined' && window.p5HeaderSketch.updateTheme) {
+        window.p5HeaderSketch.updateTheme(darkOn);
+      }
     });
+  </script>
 
-    // --- P5.js GENERATIVE HEADER ---
-    let pg, shapes = [], colors = [], brightColors = [];
-    let mediaAssets = [], videos = [];
-    let lastChange = 0, fadeProgress = 0, fadeDuration = 2000;
-    let nextChangeInterval = 5000; // will vary randomly between 4–8s
-    let prevShapes = [];
+  <!-- p5.js sketch: transparent canvas inside header, fades + occasional media fill -->
+  <script>
+    // We'll attach the p5 instance to window.p5HeaderSketch to enable communication (updateTheme)
+    (function () {
+      // variables for sketch accessible to both instance and outside
+      let instance = function (p) {
+        const ASSET_IMG_PREFIX = 'my_homepage/'; // user-provided
+        const ASSET_IMG_LIST = ['img1.png','img2.png','img3.png','img4.png', 'img5.png', 'img6.png', 'img7.png', 'img8.png', 'img9.png', 'img10.png']; // update to match your files or load dynamically
+        const ASSET_VID_LIST = ['vid1.mp4','vid2.mp4']; // optional
 
-    function preload() {
-      // preload a few images and videos from my_assets
-      for (let i = 1; i <= 4; i++) mediaAssets.push(loadImage(`my_homepage/img${i}.png`));
-      for (let j = 1; j <= 2; j++) videos.push(createVideo([`my_homepage/vid${j}.mp4`]));
-    }
+        // base (Braque) palette (muted warm tones)
+        const basePaletteRGB = [
+          [194,141,60,95],
+          [77,89,65,95],
+          [102,105,84,95],
+          [80,66,35,95],
+          [84,110,89,95],
+          [114,68,10,95],
+          [200,191,143,95],
+          [194,130,32,95]
+        ];
 
-    function setup() {
-      const holder = document.getElementById("p5-holder");
-      let cnv = createCanvas(holder.offsetWidth, holder.offsetHeight);
-      cnv.parent(holder);
-      clear();
-      noStroke();
+        // retro bright palette (for dark mode)
+        const retroPaletteRGB = [
+          [255,70,70,160],     // bright red
+          [70,170,255,160],    // bright blue
+          [50,255,130,160],    // bright green
+          [255,240,80,160],    // bright yellow
+          [255,110,200,160]    // pink
+        ];
 
-      colors = [
-        color(194,141,60,95), color(77,89,65,95), color(102,105,84,95),
-        color(80,66,35,95), color(84,110,89,95), color(114,68,10,95),
-        color(200,191,143,95), color(194,130,32,95)
-      ];
+        let widthTarget = 0, heightTarget = 0;
+        let pg; // offscreen buffer for drawing shapes
+        let shapes = [], prevShapes = [];
+        let palette = [], basePalette = [], retroPalette = [];
+        let mediaImgs = [], mediaVids = [];
+        let lastChange = 0;
+        let fadeDuration = 2000; // fade duration (ms)
+        let nextChangeInterval = 5000; // randomized between 4000-8000 by logic
+        let isDark = false; // theme state mirror
+        let canvasHolder, headerEl;
 
-      brightColors = [
-        color(255, 70, 70, 150), color(70, 170, 255, 150),
-        color(50, 255, 130, 150), color(255, 240, 80, 150),
-        color(255, 110, 200, 150)
-      ];
+        // preload media images & videos
+        p.preload = function () {
+          // load images - these are optional; if missing, loadImage will error.
+          // You may want to adjust the filenames to match exact names in your my_assets folder.
+          ASSET_IMG_LIST.forEach((f) => {
+            try {
+              mediaImgs.push(p.loadImage(ASSET_IMG_PREFIX + f));
+            } catch (e) {
+              // ignore missing assets
+            }
+          });
 
-      videos.forEach(v => { v.hide(); v.loop(); });
-      generateShapes();
-    }
+          // videos: p.createVideo is not available in preload in the same way, so we'll create them in setup
+        };
 
-    function draw() {
-      clear();
-
-      let now = millis();
-      fadeProgress = constrain((now - lastChange) / fadeDuration, 0, 1);
-
-      pg = createGraphics(width, height);
-      pg.clear();
-
-      for (let i = 0; i < shapes.length; i++) {
-        let s1 = prevShapes[i] || shapes[i];
-        let s2 = shapes[i];
-
-        let x = lerp(s1.x, s2.x, fadeProgress);
-        let y = lerp(s1.y, s2.y, fadeProgress);
-        let w = lerp(s1.w, s2.w, fadeProgress);
-        let h = lerp(s1.h, s2.h, fadeProgress);
-        let c = lerpColor(s1.col, s2.col, fadeProgress);
-
-        if (s2.img && random() < 0.5) {
-          pg.imageMode(CENTER);
-          pg.image(s2.img, x, y, w, h);
-        } else if (s2.vid && random() < 0.3) {
-          pg.imageMode(CENTER);
-          pg.image(s2.vid, x, y, w, h);
-        } else {
-          pg.fill(c);
-          if (s2.type === "circle") pg.circle(x, y, w);
-          else if (s2.type === "ellipse") pg.ellipse(x, y, w, h);
-          else if (s2.type === "square") pg.square(x, y, w);
-          else pg.rect(x, y, w, h);
-        }
-      }
-
-      image(pg, 0, 0);
-
-      if (now - lastChange > nextChangeInterval) {
-        nextChangeInterval = random(4000, 8000);
-        prevShapes = shapes;
-        generateShapes();
-        lastChange = now;
-      }
-    }
-
-    function generateShapes() {
-      shapes = [];
-      let shapeTypes = ["circle", "ellipse", "square", "rect"];
-      for (let i = 0; i < 8; i+
+        p.setup = function () {
+          headerEl = document.querySelector('header .nav') || document.querySelector('header');
+          canvasHolder = document.getElementById('header-canvas-holder');
