@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Responsive File Folder Background</title>
+  <title>Retro Folder Page</title>
   <style>
     /* --- RESET --- */
     * {
@@ -15,47 +15,88 @@
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
       font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
-    /* --- FULL PAGE FOLDER BACKGROUND --- */
+    /* --- SKY BACKGROUND --- */
     body {
-      background-color: #f5e0a1; /* manila tone */
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
+      background: linear-gradient(to bottom, #b3dcff 0%, #e2f3ff 80%);
+      position: relative;
     }
 
+    /* --- CLOUDS (simple layered shapes) --- */
+    .cloud {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+      box-shadow:
+        40px 10px 0 0 #fff,
+        80px 15px 0 0 #fff,
+        20px 25px 0 0 #fff,
+        60px 30px 0 0 #fff;
+      animation: float 40s linear infinite;
+    }
+
+    .cloud.small {
+      width: 80px;
+      height: 40px;
+      top: 3%;
+      left: 10%;
+      animation-delay: -10s;
+      transform: scale(0.8);
+    }
+
+    .cloud.large {
+      width: 120px;
+      height: 60px;
+      top: 8%;
+      left: 70%;
+      animation-delay: -5s;
+      transform: scale(1.2);
+    }
+
+    @keyframes float {
+      from { transform: translateX(-200px); }
+      to { transform: translateX(100vw); }
+    }
+
+    /* --- FOLDER STRUCTURE --- */
     .folder {
-      position: relative;
+      position: absolute;
+      bottom: 0;
+      left: 0;
       width: 100%;
-      height: 100%;
+      height: 92%; /* slightly lowered top edge */
       background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
       border-top-left-radius: 1rem;
       border-top-right-radius: 1rem;
-      box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1);
+      box-shadow:
+        0 -2px 6px rgba(0,0,0,0.15),
+        inset 0 -6px 8px rgba(0,0,0,0.15); /* bottom shading */
+      overflow: hidden;
     }
 
-    /* The “paper” layer – now a small visible strip near the top */
+    /* --- PAPER LAYER --- */
     .paper {
       position: absolute;
-      top: 7%;
+      top: 5%;
       left: 0;
       width: 100%;
-      height: 8%; /* much smaller! */
+      height: 7%;
       background: #fffaf0;
-      border-radius: 0.5rem 0.5rem 0 0;
+      border-radius: 0.4rem 0.4rem 0 0;
       box-shadow: 0 2px 3px rgba(0,0,0,0.1);
     }
 
-    /* Tabs bar */
+    /* --- TABS --- */
     .tabs {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: 8%;
+      height: 9%;
       display: flex;
       justify-content: flex-start;
       align-items: flex-end;
@@ -84,30 +125,32 @@
       transform: translateY(-3px);
     }
 
-    /* Staggered tab effect */
+    /* Staggered look */
     .tab:nth-child(1) { margin-top: 1%; }
     .tab:nth-child(2) { margin-top: 3%; }
     .tab:nth-child(3) { margin-top: 5%; }
 
-    /* Responsive adjustments */
+    /* RESPONSIVE TWEAKS */
     @media (max-width: 768px) {
-      .tab {
-        flex: 0 0 25%;
-        font-size: 0.9rem;
-      }
+      .tab { flex: 0 0 25%; font-size: 0.9rem; }
+      .folder { height: 90%; }
     }
 
     @media (max-width: 480px) {
-      .tab {
-        flex: 0 0 30%;
-        font-size: 0.8rem;
-      }
+      .tab { flex: 0 0 30%; font-size: 0.8rem; }
       .tabs { height: 10%; }
-      .paper { top: 9%; height: 6%; }
+      .paper { top: 6%; height: 6%; }
+      .folder { height: 88%; }
     }
+
   </style>
 </head>
 <body>
+  <!-- Sky with clouds -->
+  <div class="cloud small"></div>
+  <div class="cloud large"></div>
+
+  <!-- Folder content -->
   <div class="folder">
     <div class="tabs">
       <div class="tab">Tab One</div>
