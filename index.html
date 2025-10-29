@@ -114,7 +114,7 @@
   .text-box {
     position: absolute;
     left: 2%;
-    top: calc(21% + 12%); /* approx. just below the p5 sketch */
+    top: 36%; /* lowered below p5 sketch */
     width: 60%;
     background: #cfeec7;
     border: 2px solid #aac3a3;
@@ -124,7 +124,6 @@
     align-items: center;
     padding: 0.4em 0.6em;
   }
-
   .text-box span {
     font-family: 'IBM Plex Sans', monospace;
     font-size: 1.15rem;
@@ -176,9 +175,133 @@
   <!-- p5 library -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- ✅ Full p5 sketch restored -->
+  <!-- ✅ Working p5 Sketch -->
   <script>
-  /* your last working p5 sketch code here exactly as it was */
+  let gridTex;
+  let textLayer;
+  let sphereDetail = 50;
+  let autoRotate = 0;
+
+  function setup() {
+    const aspectRatio = 0.25;
+    let cnv = createCanvas(windowWidth, windowWidth * aspectRatio, WEBGL);
+    cnv.parent('p5-holder'); // ✅ attach canvas to the holder
+    setAttributes('alpha', true);
+    noStroke();
+
+    gridTex = createGraphics(512, 256);
+    gridTex.clear();
+    drawGridTexture(gridTex);
+
+    textLayer = createGraphics(width, height);
+    textLayer.pixelDensity(1);
+    textLayer.clear();
+    updateTextLayer();
+  }
+
+  function draw() {
+    background('#f7cfcf');
+
+    push();
+    translate(-width / 2, 0, 0);
+
+    const radius = height * 0.32; // slightly smaller sphere
+    const sphereCX = radius + height * 0.10;
+
+    autoRotate += 0.003;
+    push();
+    translate(sphereCX, 0, 0);
+    const rotY = map(mouseX, 0, width, -PI, PI);
+    const rotX = map(mouseY, 0, height, -PI / 2, PI / 2);
+    rotateY(rotY + autoRotate);
+    rotateX(rotX * 0.5);
+    texture(gridTex);
+    sphere(radius, sphereDetail, sphereDetail);
+    pop();
+
+    updateTextLayer();
+    image(textLayer, 0, -height / 2);
+    pop();
+  }
+
+  function updateTextLayer() {
+    if (textLayer.width !== width || textLayer.height !== height) {
+      textLayer.resizeCanvas(width, height);
+    }
+    textLayer.clear();
+
+    const pastelColors = [
+      '#97717E',
+      [173, 216, 230],
+      [152, 251, 152]
+    ];
+
+    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
+    textLayer.textFont('IBM Plex Sans, monospace');
+
+    const baseText = "wen Denver Emerson";
+    let fontSize = height * 0.95; // larger text
+    textLayer.textSize(fontSize);
+    let textW = textLayer.textWidth(baseText);
+    if (textW > width * 0.88) {
+      fontSize *= (width * 0.88) / textW;
+      textLayer.textSize(fontSize);
+    }
+
+    const radius = height * 0.32;
+    const sphereCX = radius + height * 0.10;
+    const oSpacing = radius * 0.9;
+    const textStartX = sphereCX + oSpacing;
+    const baselineY = height / 2;
+
+    pastelColors.forEach((rgb, idx) => {
+      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textLayer.strokeWeight(3);
+      textLayer.noFill();
+      textLayer.text(baseText, textStartX + idx * 0.6, baselineY + idx * 0.4);
+    });
+
+    textLayer.stroke('#97717E');
+    textLayer.strokeWeight(3);
+    textLayer.noFill();
+    textLayer.text(baseText, textStartX, baselineY);
+
+    textLayer.noStroke();
+    textLayer.fill(255);
+    textLayer.text(baseText, textStartX, baselineY);
+  }
+
+  function drawGridTexture(pg) {
+    pg.background(255);
+    pg.stroke('#c8b1b9');
+    pg.strokeWeight(1.5);
+
+    const colors = [
+      color(255, 182, 193),
+      color(173, 216, 230),
+      color(152, 251, 152)
+    ];
+
+    for (let i = 0; i <= pg.width; i += pg.width / 12) {
+      const c = colors[int((i / (pg.width / 12)) % 3)];
+      pg.stroke(c);
+      pg.line(i, 0, i, pg.height);
+    }
+
+    for (let j = 0; j <= pg.height; j += pg.height / 6) {
+      const c = colors[int((j / (pg.height / 6)) % 3)];
+      pg.stroke(c);
+      pg.line(0, j, pg.width, j);
+    }
+
+    pg.stroke('#c8b1b9');
+  }
+
+  function windowResized() {
+    const aspectRatio = 0.25;
+    resizeCanvas(windowWidth, windowWidth * aspectRatio);
+    updateTextLayer();
+  }
   </script>
 
   <!-- Card stack animation -->
