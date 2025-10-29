@@ -99,7 +99,9 @@
   pointer-events: none;
   left: 2%;
   top: 21%;        /* ↓ lowered from 18.5% so it clears the white–manila seam */
-  width: 60%;      /* ↓ slightly smaller overall scale to keep proportions neat */
+  width: 60%;
+  transform-origin: top left;
+  transform: scale(0.85); /* ↓ slightly smaller overall scale to keep proportions neat */
 }
 
 canvas.p5Canvas {
