@@ -5,216 +5,330 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Folder — Scandinavian Flat Version (Final Portrait Lock)</title>
 
+<!-- Font: Google Sans Mono -->
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Mono:wght@500&display=swap" rel="stylesheet">
+
+<!-- p5.js -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{
-    height:100%;width:100%;
-    font-family:'Inter',system-ui,Arial,sans-serif;
-    overflow:hidden;
-    background:linear-gradient(to bottom,#bfe5ff 0%,#eaf7ff 80%);
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    width: 100%;
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #bfe5ff 0%, #eaf7ff 80%);
   }
 
-  /* folder layers */
-  .folder-back{position:absolute;bottom:0;left:0;width:100%;height:86%;
+  /* --- CLOUDS --- */
+  .cloud { position:absolute; height:16px; background:rgba(255,255,255,0.9); z-index:1; animation:float 40s linear infinite; }
+  .cloud::before, .cloud::after { content:""; position:absolute; height:100%; background:inherit; }
+  .cloud.small { top:8%; left:-20%; width:120px; animation-duration:38s; }
+  .cloud.small::before { left:140px; width:80px; }
+  .cloud.small::after { left:240px; width:60px; }
+  .cloud.large { top:18%; left:-30%; width:180px; animation-duration:52s; animation-delay:-6s; }
+  .cloud.large::before { left:200px; width:100px; }
+  .cloud.large::after { left:320px; width:80px; }
+  @keyframes float { from { transform: translateX(0); } to { transform: translateX(130vw); } }
+
+  /* --- FOLDER STRUCTURE --- */
+  .folder-back {
+    position:absolute; bottom:0; left:0; width:100%; height:86%;
     background:linear-gradient(to bottom,#e9d79a 0%,#e2c97f 100%);
-    z-index:2;border-top:2px solid rgba(0,0,0,0.12);}
-  .paper{position:absolute;top:15%;left:0;width:100%;height:5%;background:#fff;z-index:3;border-top:1px solid rgba(0,0,0,0.1);border-bottom:1px solid rgba(0,0,0,0.1);}
-  .folder-front{
-    position:absolute;bottom:0;left:0;width:100%;top:20%;
+    z-index:2; border-top:2px solid rgba(0,0,0,0.12);
+  }
+
+  .paper {
+    position:absolute; top:15%; left:0; width:100%; height:5%;
+    background:#fff; z-index:3; border-top:1px solid rgba(0,0,0,0.1);
+    border-bottom:1px solid rgba(0,0,0,0.1);
+  }
+
+  .folder-front {
+    position:absolute; bottom:0; left:0; width:100%; top:20%;
     background:linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
-    z-index:4;border-top:2px solid rgba(0,0,0,0.2);
-    display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+    z-index:4; border-top:2px solid rgba(0,0,0,0.2);
+    display:flex; flex-direction:row; align-items:center; justify-content:space-between;
     padding:0 5%;
   }
 
-  /* red name banner container */
-  .name-banner{
-    flex:1;
-    display:flex;
-    justify-content:flex-start;
-    align-items:center;
-    background:transparent;
-    margin-right:4%;
-    z-index:5;
+  /* --- NAME BANNER FRAME --- */
+  .name-banner {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f7cfcf; /* flat red, same as Tab Three */
+    border: 2px solid rgba(0,0,0,0.18);
+    border-radius: 0;
+    padding: 0.6% 0.8%; /* slimmer, tighter fit */
+    margin-right: 4%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    z-index: 5;
   }
-  .name-inner{
-    display:block;
-    width:95%;               /* fill most of the banner */
-    background:#f7cfcf;
-    border:2px solid rgba(0,0,0,0.18);
-    padding:0.6% 0.5%;
-    box-shadow:0 2px 4px rgba(0,0,0,0.08);
-    transform:translate(-2%, -6%);
-  }
-
-  @media(max-width:480px){
-    .folder-front{flex-direction:column;align-items:center;}
-    .name-banner{order:-1;width:94%;margin:4% auto;}
-    .name-inner{width:100%;transform:none;}
+  @media (max-width: 480px) {
+    .name-banner {
+      width: 94%;
+      margin: 4% auto;
+    }
   }
 
-  #p5-banner{
-    width:100%;
-    height:auto;
-    z-index:6;
+  /* --- P5 CONTAINER --- */
+  #p5-banner {
+    position: relative;
+    flex: 1;
+    height: auto;
+    z-index: 6;
   }
-  canvas{
-    width:100%!important;
-    height:auto!important;
-    background:transparent!important;
+  canvas {
+    width:100% !important;
+    height:auto !important;
+    background:transparent !important;
     pointer-events:none;
   }
 
-  /* card stack */
-  .card-stack{
+  /* --- CARD STACK --- */
+  .card-stack {
     flex:0 0 26%;
     max-width:320px;
     aspect-ratio:3/4;
-    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-    z-index:6;perspective:1000px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    z-index:6;
+    perspective:1000px;
   }
-  .card{position:absolute;width:100%;height:100%;border:2px solid rgba(0,0,0,0.1);background:#fff;
-    display:flex;align-items:center;justify-content:center;transition:transform 0.6s ease,opacity 0.6s ease;}
-  .card img,.card video{width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none;}
-  .card-stack .card:nth-child(1){transform:translateY(0px) scale(1);z-index:3;}
-  .card-stack .card:nth-child(2){transform:translateY(8px) scale(0.97);z-index:2;}
-  .card-stack .card:nth-child(3){transform:translateY(16px) scale(0.94);z-index:1;}
-  .card-stack:hover .card:nth-child(1){transform:translateY(-4px) scale(1.02);}
+  .card {
+    position:absolute;
+    width:100%; height:100%;
+    border:2px solid rgba(0,0,0,0.1);
+    background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.6s ease, opacity 0.6s ease;
+    will-change:transform, opacity;
+  }
+  .card img, .card video { width:100%; height:100%; object-fit:cover; pointer-events:none; user-select:none; }
+  .card-stack .card:nth-child(1){ transform:translateY(0px) scale(1); z-index:3; }
+  .card-stack .card:nth-child(2){ transform:translateY(8px) scale(0.97); z-index:2; }
+  .card-stack .card:nth-child(3){ transform:translateY(16px) scale(0.94); z-index:1; }
+  .card-stack:hover .card:nth-child(1){ transform:translateY(-4px) scale(1.02); }
 
-  /* tabs */
-  .tabs{position:absolute;top:6%;left:0;width:100%;display:flex;gap:1%;padding-left:2%;align-items:flex-end;z-index:5;}
-  .tab{flex:0 0 18%;height:8vh;display:flex;align-items:center;justify-content:center;border:2px solid rgba(0,0,0,0.18);font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}
-  .tab.manila{background:#f7e9b8;color:#3a2f09;}
-  .tab.green{background:#cfeec7;color:#1f4d2b;}
-  .tab.pink{background:#f7cfcf;color:#5a3131;}
+  @media (max-width:900px){ .card-stack{ width:34%; } }
+  @media (max-width:480px){
+    .folder-front { flex-direction:column; align-items:center; }
+    .name-banner { order:-1; width:100%; margin-bottom:4%; }
+    .card-stack { width:80%; margin-top:4%; }
+  }
+
+  /* --- TABS --- */
+  .tabs { position:absolute; top:6%; left:0; width:100%; display:flex; gap:1%; padding-left:2%; align-items:flex-end; z-index:5; }
+  .tab { flex:0 0 18%; height:8vh; display:flex; align-items:center; justify-content:center;
+         border:2px solid rgba(0,0,0,0.18); font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+         cursor:pointer; transition:background 0.25s ease, transform 0.15s ease; border-radius:0 !important; }
+  .tab button{ all:unset; width:100%; height:100%; text-align:center; cursor:pointer; border-radius:0 !important; }
+  .tab.manila{ background:#f7e9b8; color:#3a2f09; }
+  .tab.green{ background:#cfeec7; color:#1f4d2b; }
+  .tab.pink{ background:#f7cfcf; color:#5a3131; }
+  .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
+
+  /* --- PORTRAIT LOCK FALLBACK --- */
+  @media screen and (max-width:900px) and (orientation:landscape){
+    body::before{
+      content:"Please rotate your device upright";
+      position:fixed; top:0; left:0; width:100vw; height:100vh;
+      background:linear-gradient(to bottom,#bfe5ff 0%,#eaf7ff 80%);
+      color:#1e1e1e; font-family:'Inter',sans-serif; font-weight:600;
+      letter-spacing:0.03em; display:flex; align-items:center; justify-content:center;
+      text-align:center; font-size:1.15rem; text-shadow:0 1px 3px rgba(255,255,255,0.6);
+      z-index:9999;
+    }
+  }
 </style>
 </head>
 <body>
-<div class="folder-back"></div>
-<div class="tabs">
-  <div class="tab manila">Tab One</div>
-  <div class="tab green">Tab Two</div>
-  <div class="tab pink">Tab Three</div>
-</div>
-<div class="paper"></div>
+  <!-- Clouds -->
+  <div class="cloud small" aria-hidden="true"></div>
+  <div class="cloud large" aria-hidden="true"></div>
 
-<div class="folder-front">
-  <div class="name-banner">
-    <div class="name-inner">
+  <!-- Folder Structure -->
+  <div class="folder-back" aria-hidden="true"></div>
+  <div class="tabs">
+    <div class="tab manila"><button>Tab One</button></div>
+    <div class="tab green"><button>Tab Two</button></div>
+    <div class="tab pink"><button>Tab Three</button></div>
+  </div>
+  <div class="paper" aria-hidden="true"></div>
+
+  <div class="folder-front">
+    <!-- Red banner frame -->
+    <div class="name-banner">
       <div id="p5-banner"></div>
+    </div>
+
+    <!-- Card stack -->
+    <div class="card-stack">
+      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
+      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
+      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
+      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
     </div>
   </div>
 
-  <div class="card-stack">
-    <div class="card"><img src="my_homepage/img1.png"></div>
-    <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
-    <div class="card"><img src="my_homepage/img2.png"></div>
-    <div class="card"><img src="my_homepage/img3.png"></div>
-  </div>
-</div>
-
 <script>
-const stack=document.querySelector('.card-stack');
-let intervalTime=4000,lastTime=0;
-function cycleCards(){
-  const cards=stack.querySelectorAll('.card');
-  if(cards.length<=1)return;
-  const top=cards[0],second=cards[1];
-  top.style.transform='translateX(110%)';
-  top.style.opacity='0';
-  second.style.transform='translateY(0) scale(1)';
-  second.style.zIndex=3;
-  for(let i=2;i<cards.length;i++){
-    const y=8*(i-1),scale=1-0.03*(i-1);
-    cards[i].style.transform=`translateY(${y}px) scale(${scale})`;
-    cards[i].style.zIndex=3-i;
+/* --- CARD STACK LOOP --- */
+const stack = document.querySelector('.card-stack');
+let intervalTime = 4000;
+let lastTime = 0;
+function cycleCards() {
+  const cards = stack.querySelectorAll('.card');
+  if (cards.length <= 1) return;
+  const top = cards[0], second = cards[1];
+  top.style.transform = 'translateX(110%) rotate(0deg)';
+  top.style.opacity = '0';
+  second.style.transform = 'translateY(0) scale(1)';
+  second.style.zIndex = 3;
+  for (let i = 2; i < cards.length; i++) {
+    const y = 8 * (i - 1), scale = 1 - 0.03 * (i - 1);
+    cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+    cards[i].style.zIndex = 3 - i;
   }
-  setTimeout(()=>{
-    top.style.transition='none';
-    const n=cards.length;
-    top.style.transform=`translateY(${8*(n-1)}px) scale(${1-0.03*(n-1)})`;
-    top.style.opacity='1';top.style.zIndex=1;stack.appendChild(top);
+  setTimeout(() => {
+    top.style.transition = 'none';
+    const n = cards.length;
+    top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
+    top.style.opacity = '1'; top.style.zIndex = 1; stack.appendChild(top);
     void top.offsetWidth;
-    top.style.transition='transform 0.6s ease,opacity 0.6s ease';
-  },600);
+    top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+  }, 600);
 }
-function animationLoop(ts){
-  if(ts-lastTime>=intervalTime){cycleCards();lastTime=ts;}
+function animationLoop(timestamp) {
+  if (timestamp - lastTime >= intervalTime) { cycleCards(); lastTime = timestamp; }
   requestAnimationFrame(animationLoop);
 }
 requestAnimationFrame(animationLoop);
 
-/* --- P5 --- */
-new p5(p=>{
-  let gridTex,textLayer,autoRotate=0,sphereDetail=50;
-  const aspectRatio=0.18;
-  p.setup=()=>{
-    const parent=document.getElementById('p5-banner');
-    const w=parent.offsetWidth,h=w*aspectRatio;
-    const c=p.createCanvas(w,h,p.WEBGL);
+/* --- P5.js SKETCH --- */
+new p5(p => {
+  let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
+  const aspectRatio = 0.18; // slimmer banner, fits tighter
+
+  p.setup = function() {
+    const parent = document.getElementById('p5-banner');
+    const w = parent.offsetWidth, h = w * aspectRatio;
+    const c = p.createCanvas(w, h, p.WEBGL);
     c.parent('p5-banner');
-    p.setAttributes('alpha',true);
-    gridTex=p.createGraphics(512,256);
+    p.setAttributes('alpha', true);
+    p.noStroke();
+
+    gridTex = p.createGraphics(512, 256);
+    gridTex.clear();
     drawGridTexture(gridTex);
-    textLayer=p.createGraphics(w,h);
-    updateTextLayer(w,h);
-  };
-  p.draw=()=>{
-    p.clear();p.push();p.translate(-p.width/2,0,0);
-    const h=p.height,w=p.width,radius=h*0.21,sphereCX=radius+h*0.18;
-    autoRotate+=0.003;
-    p.push();
-    p.translate(sphereCX,0,0);
-    p.rotateY(autoRotate);
-    p.fill(255,255,255,150);
-    p.texture(gridTex);
-    p.sphere(radius,sphereDetail,sphereDetail);
-    p.pop();
-    updateTextLayer(w,h);
-    p.image(textLayer,0,-h/2);
-    p.pop();
-  };
-  function updateTextLayer(w,h){
-    if(textLayer.width!==w||textLayer.height!==h)textLayer.resizeCanvas(w,h);
+
+    textLayer = p.createGraphics(w, h);
+    textLayer.pixelDensity(1);
     textLayer.clear();
-    const pastel=[[255,182,193],[173,216,230],[152,251,152]];
-    textLayer.textAlign(textLayer.LEFT,textLayer.CENTER);
+    updateTextLayer(w, h);
+  };
+
+  p.draw = function() {
+    p.clear();
+    p.push();
+    p.translate(-p.width / 2, 0, 0);
+
+    const h = p.height;
+    const w = p.width;
+    const radius = h * 0.21; // reduced radius to stay inside red box
+    const sphereCX = radius + h * 0.18; // moved slightly right
+
+    autoRotate += 0.003;
+    p.push();
+    p.translate(sphereCX, 0, 0);
+    const rotY = p.map(p.mouseX, 0, w, -p.PI, p.PI);
+    const rotX = p.map(p.mouseY, 0, h, -p.PI / 2, p.PI / 2);
+    p.rotateY(rotY + autoRotate);
+    p.rotateX(rotX * 0.5);
+
+    p.fill(255, 255, 255, 150);
+    p.texture(gridTex);
+    p.sphere(radius, sphereDetail, sphereDetail);
+    p.pop();
+
+    updateTextLayer(p.width, p.height);
+    p.image(textLayer, 0, -p.height / 2);
+    p.pop();
+  };
+
+  function updateTextLayer(w, h) {
+    if (textLayer.width !== w || textLayer.height !== h) {
+      textLayer.resizeCanvas(w, h);
+    }
+    textLayer.clear();
+
+    const pastelColors = [
+      [255, 182, 193],
+      [173, 216, 230],
+      [152, 251, 152]
+    ];
+
+    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
     textLayer.textFont('Google Sans Mono, monospace');
-    const fs=h*0.36;textLayer.textSize(fs);
-    const radius=h*0.21,sphereCX=radius+h*0.18,oSpacing=radius*0.68;
-    const textStartX=sphereCX+oSpacing+w*0.008;
-    const txt="wen Denver Emerson";
-    textLayer.fill(0,0,0,60);textLayer.text(txt,textStartX+2,h/2+2);
-    pastel.forEach((rgb,i)=>{
-      textLayer.stroke(rgb[0],rgb[1],rgb[2],220);
-      textLayer.strokeWeight(3);textLayer.noFill();
-      textLayer.text(txt,textStartX+i*0.6,h/2+i*0.4);
+    const fontSize = h * 0.36;
+    textLayer.textSize(fontSize);
+
+    const radius = h * 0.21;
+    const sphereCX = radius + h * 0.18;
+    const oSpacing = radius * 0.68;
+    const textStartX = sphereCX + oSpacing + w * 0.015;
+    const baseText = "wen Denver Emerson";
+
+    textLayer.noStroke();
+    textLayer.fill(0, 0, 0, 60);
+    textLayer.text(baseText, textStartX + 2, h / 2 + 2);
+
+    pastelColors.forEach((rgb, idx) => {
+      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textLayer.strokeWeight(3);
+      textLayer.noFill();
+      textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
     });
-    textLayer.stroke(255);textLayer.strokeWeight(1);
-    textLayer.noFill();textLayer.text(txt,textStartX,h/2);
-    textLayer.noStroke();textLayer.fill(255);
-    textLayer.text(txt,textStartX,h/2);
+
+    textLayer.stroke(255);
+    textLayer.strokeWeight(1);
+    textLayer.noFill();
+    textLayer.text(baseText, textStartX, h / 2);
+
+    textLayer.noStroke();
+    textLayer.fill(255);
+    textLayer.text(baseText, textStartX, h / 2);
   }
-  function drawGridTexture(pg){
-    pg.clear();pg.strokeWeight(2);
-    const cols=[p.color(255,182,193),p.color(173,216,230),p.color(152,251,152)];
-    for(let i=0;i<=pg.width;i+=pg.width/12){
-      const c=cols[Math.floor((i/(pg.width/12))%3)];
-      pg.stroke(c);pg.line(i,0,i,pg.height);
+
+  function drawGridTexture(pg) {
+    pg.clear();
+    pg.strokeWeight(2);
+    const colors = [
+      p.color(255,182,193),
+      p.color(173,216,230),
+      p.color(152,251,152)
+    ];
+    for (let i = 0; i <= pg.width; i += pg.width / 12) {
+      const c = colors[Math.floor((i / (pg.width / 12)) % 3)];
+      pg.stroke(c);
+      pg.line(i, 0, i, pg.height);
     }
-    for(let j=0;j<=pg.height;j+=pg.height/6){
-      const c=cols[Math.floor((j/(pg.height/6))%3)];
-      pg.stroke(c);pg.line(0,j,pg.width,j);
+    for (let j = 0; j <= pg.height; j += pg.height / 6) {
+      const c = colors[Math.floor((j / (pg.height / 6)) % 3)];
+      pg.stroke(c);
+      pg.line(0, j, pg.width, j);
     }
   }
-  p.windowResized=()=>{
-    const parent=document.getElementById('p5-banner');
-    const w=parent.offsetWidth,h=w*aspectRatio;
-    p.resizeCanvas(w,h);
-    updateTextLayer(w,h);
+
+  p.windowResized = function() {
+    const parent = document.getElementById('p5-banner');
+    const w = parent.offsetWidth, h = w * aspectRatio;
+    p.resizeCanvas(w, h);
+    updateTextLayer(w, h);
   };
 });
 </script>
