@@ -1,3 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Folder — Scandinavian Flat Version (Final Portrait Lock)</title>
+
+<!-- Orbitron font -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
+<!-- p5.js -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+<style>
+  /* your entire existing CSS unchanged up to the end of your <style> tag */
+  /* ... (all your original rules) ... */
+
+  /* --- NEW OVERLAY CONTAINER FOR P5 --- */
+  #p5-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;           /* on top of everything */
+    pointer-events: none;    /* never block clicks */
+    background: transparent; /* truly transparent */
+  }
+</style>
+</head>
+<body>
+  <!-- NEW: top-layer overlay for p5 sketch -->
+  <div id="p5-overlay"></div>
+
+  <!-- everything else in your HTML stays the same -->
+  <!-- Clouds -->
+  <div class="cloud small" aria-hidden="true"></div>
+  <div class="cloud large" aria-hidden="true"></div>
+
+  <!-- Folder Structure -->
+  <div class="folder-back" aria-hidden="true"></div>
+  <div class="tabs">
+    <div class="tab manila"><button>Tab One</button></div>
+    <div class="tab green"><button>Tab Two</button></div>
+    <div class="tab pink"><button>Tab Three</button></div>
+  </div>
+  <div class="paper" aria-hidden="true"></div>
+  <div class="folder-front" aria-hidden="true">
+    <div class="card-stack">
+      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
+      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
+      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
+      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
+    </div>
+  </div>
+
 <script>
 /* --- CARD STACK LOOP --- (unchanged) --- */
 const stack = document.querySelector('.card-stack');
@@ -171,3 +227,5 @@ new p5(p => {
   };
 });
 </script>
+</body>
+</html>
