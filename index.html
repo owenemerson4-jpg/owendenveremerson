@@ -48,7 +48,7 @@
   .folder-front {
     position:absolute; bottom:0; left:0; width:100%; top:20%;
     background:linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
-    z-index:4; border-top:2px solid rgba(0,0,0,0.2);
+    z-index:4;
     display:flex; flex-direction:row; align-items:center; justify-content:space-between;
     padding:0 5%;
   }
@@ -57,13 +57,16 @@
   #p5-banner {
     position:relative;
     flex:1;
-    height:auto;
     z-index:5;
   }
-  canvas {
+  #p5-banner canvas {
+    position:absolute;
+    top:0;
+    left:0;
     width:100% !important;
     height:auto !important;
     background:transparent !important;
+    z-index:10;
     pointer-events:none;
   }
 
@@ -127,24 +130,19 @@
 </style>
 </head>
 <body>
-  <!-- Clouds -->
-  <div class="cloud small" aria-hidden="true"></div>
-  <div class="cloud large" aria-hidden="true"></div>
+  <div class="cloud small"></div>
+  <div class="cloud large"></div>
 
-  <!-- Folder Structure -->
-  <div class="folder-back" aria-hidden="true"></div>
+  <div class="folder-back"></div>
   <div class="tabs">
     <div class="tab manila"><button>Tab One</button></div>
     <div class="tab green"><button>Tab Two</button></div>
     <div class="tab pink"><button>Tab Three</button></div>
   </div>
-  <div class="paper" aria-hidden="true"></div>
+  <div class="paper"></div>
 
   <div class="folder-front">
-    <!-- Responsive P5 banner -->
     <div id="p5-banner"></div>
-
-    <!-- Card stack -->
     <div class="card-stack">
       <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
       <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
@@ -154,7 +152,7 @@
   </div>
 
 <script>
-/* --- CARD STACK LOOP --- */
+/* --- CARD STACK LOOP --- (unchanged) --- */
 const stack = document.querySelector('.card-stack');
 let intervalTime = 4000;
 let lastTime = 0;
@@ -258,12 +256,10 @@ new p5(p => {
     const textStartX = sphereCX + oSpacing - 8;
     const baseText = "wen Denver Emerson";
 
-    /* --- soft drop shadow --- */
     textLayer.noStroke();
-    textLayer.fill(0, 0, 0, 60); // subtle semi-transparent black
-    textLayer.text(baseText, textStartX + 2, h / 2 + 2); // slight offset shadow
+    textLayer.fill(0, 0, 0, 60);
+    textLayer.text(baseText, textStartX + 2, h / 2 + 2);
 
-    /* --- iridescent outline --- */
     pastelColors.forEach((rgb, idx) => {
       textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
       textLayer.strokeWeight(3);
@@ -271,13 +267,11 @@ new p5(p => {
       textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
     });
 
-    /* --- thin white outline --- */
     textLayer.stroke(255);
     textLayer.strokeWeight(1);
     textLayer.noFill();
     textLayer.text(baseText, textStartX, h / 2);
 
-    /* --- white fill --- */
     textLayer.noStroke();
     textLayer.fill(255);
     textLayer.text(baseText, textStartX, h / 2);
@@ -292,12 +286,12 @@ new p5(p => {
       p.color(152,251,152)
     ];
     for (let i = 0; i <= pg.width; i += pg.width / 12) {
-      const c = colors[int((i / (pg.width / 12)) % 3)];
+      const c = colors[Math.floor((i / (pg.width / 12)) % 3)];
       pg.stroke(c);
       pg.line(i, 0, i, pg.height);
     }
     for (let j = 0; j <= pg.height; j += pg.height / 6) {
-      const c = colors[int((j / (pg.height / 6)) % 3)];
+      const c = colors[Math.floor((j / (pg.height / 6)) % 3)];
       pg.stroke(c);
       pg.line(0, j, pg.width, j);
     }
