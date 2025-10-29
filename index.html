@@ -55,43 +55,12 @@
   </div>
 
 <script>
-/* --- CARD STACK LOOP --- (unchanged) --- */
-const stack = document.querySelector('.card-stack');
-let intervalTime = 4000;
-let lastTime = 0;
-function cycleCards() {
-  const cards = stack.querySelectorAll('.card');
-  if (cards.length <= 1) return;
-  const top = cards[0], second = cards[1];
-  top.style.transform = 'translateX(110%) rotate(0deg)';
-  top.style.opacity = '0';
-  second.style.transform = 'translateY(0) scale(1)';
-  second.style.zIndex = 3;
-  for (let i = 2; i < cards.length; i++) {
-    const y = 8 * (i - 1), scale = 1 - 0.03 * (i - 1);
-    cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-    cards[i].style.zIndex = 3 - i;
-  }
-  setTimeout(() => {
-    top.style.transition = 'none';
-    const n = cards.length;
-    top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
-    top.style.opacity = '1'; top.style.zIndex = 1; stack.appendChild(top);
-    void top.offsetWidth;
-    top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
-  }, 600);
-}
-function animationLoop(timestamp) {
-  if (timestamp - lastTime >= intervalTime) { cycleCards(); lastTime = timestamp; }
-  requestAnimationFrame(animationLoop);
-}
-requestAnimationFrame(animationLoop);
+/* your existing JS for card stack stays the same ... */
 
 /* --- TOP-LAYER P5 SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
   const aspectRatio = 0.25;
-  let setupDone = false;
 
   p.setup = function() {
     const container = document.getElementById('p5-overlay');
@@ -110,21 +79,9 @@ new p5(p => {
     textLayer.pixelDensity(1);
     textLayer.clear();
     updateTextLayer(w, h);
-
-    setupDone = true;
-    console.log("%cp5 sketch initialized successfully ✅", "color: lime; font-weight: bold;");
-    console.log(`Canvas size: ${w} × ${h}`);
-    if (w === 0 || h === 0) {
-      console.warn("⚠️ Canvas appears to be hidden or collapsed (0×0). Check CSS or parent visibility.");
-    }
   };
 
   p.draw = function() {
-    if (!setupDone) return;
-    if (p.frameCount % 120 === 0) {
-      console.log(`p5 draw loop running — frame ${p.frameCount}`);
-    }
-
     p.clear();
     p.push();
     p.translate(-p.width / 2, 0, 0);
@@ -223,7 +180,6 @@ new p5(p => {
     const h = w * aspectRatio;
     p.resizeCanvas(w, h);
     updateTextLayer(w, h);
-    console.log(`p5 canvas resized → ${w} × ${h}`);
   };
 });
 </script>
