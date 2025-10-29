@@ -189,8 +189,7 @@ function setup() {
   setAttributes('alpha', true);
   noStroke();
 
-  // attach canvas to positioned container
-  positionCanvas();
+  positionAndScaleCanvas();
 
   gridTex = createGraphics(512, 256);
   gridTex.clear();
@@ -202,17 +201,28 @@ function setup() {
   updateTextLayer();
 }
 
-function positionCanvas() {
-  // dynamically align with Tab One and vertical midpoint
+function positionAndScaleCanvas() {
   const tabOne = document.querySelector('.tab.manila');
   const paper = document.querySelector('.paper');
   const folderFront = document.querySelector('.folder-front');
-  if (!tabOne || !paper || !folderFront) return;
+  const cardStack = document.querySelector('.card-stack');
+  if (!tabOne || !paper || !folderFront || !cardStack) return;
 
   const tabRect = tabOne.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
   const folderRect = folderFront.getBoundingClientRect();
+  const cardRect = cardStack.getBoundingClientRect();
+
+  // vertical midpoint between paper bottom and folder top
   const yMid = paperRect.bottom + (folderRect.top - paperRect.bottom) / 2;
+
+  // available width between Tab One and Card Stack, minus cushion
+  const cushion = 24;
+  const availableWidth = cardRect.left - tabRect.left - cushion;
+
+  // maintain 0.25 aspect ratio
+  const newWidth = availableWidth;
+  const newHeight = newWidth * 0.25;
 
   const canvasEl = document.querySelector('canvas');
   Object.assign(canvasEl.style, {
@@ -220,7 +230,9 @@ function positionCanvas() {
     left: `${tabRect.left}px`,
     top: `${yMid}px`,
     zIndex: 999,
-    pointerEvents: 'auto'
+    pointerEvents: 'auto',
+    width: `${newWidth}px`,
+    height: `${newHeight}px`
   });
 }
 
@@ -228,7 +240,7 @@ function windowResized() {
   const aspectRatio = 0.25;
   resizeCanvas(windowWidth, windowWidth * aspectRatio);
   updateTextLayer();
-  positionCanvas();
+  positionAndScaleCanvas();
 }
 
 function draw() {
@@ -354,5 +366,6 @@ function drawGridTexture(pg) {
   pg.stroke('#c8b1b9');
 }
 </script>
+
 </body>
 </html>
