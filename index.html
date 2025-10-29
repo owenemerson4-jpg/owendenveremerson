@@ -103,33 +103,35 @@
     transform-origin: top left;
     transform: scale(0.85);
   }
+
   canvas.p5Canvas {
     width: 100% !important;
     height: auto !important;
     pointer-events: auto !important;
   }
 
-  /* --- ✅ NEW GREEN TEXT BOX BELOW SKETCH --- */
-  .text-box {
+  /* --- ✅ INDEPENDENT GREEN TEXT BOX --- */
+  .green-text-box {
     position: absolute;
     left: 2%;
-    top: 35%;              /* just below the sketch area */
+    top: 45%; /* lower down on the manila folder */
     width: 58%;
     background: #cfeec7;
     border: 2px solid #aac3a3;
-    z-index: 9;            /* sits above manila folder */
+    z-index: 5; /* same layer as manila folder */
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0.3em 0.5em;
+    padding: 0.4em 0.6em;
   }
-  .text-box span {
+
+  .green-text-box span {
     font-family: 'IBM Plex Sans', monospace;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
     color: #1f4d2b;
     text-align: center;
+    letter-spacing: 0.02em;
     text-shadow:
       1px 1px 1px rgba(173, 216, 230, 0.6),
       -1px -1px 1px rgba(152, 251, 152, 0.6),
@@ -168,8 +170,8 @@
   <!-- p5 sketch holder -->
   <div id="p5-holder"></div>
 
-  <!-- ✅ New Text Box -->
-  <div class="text-box">
+  <!-- ✅ Totally independent green text box -->
+  <div class="green-text-box">
     <span>is using multimedia design to tell memorable stories</span>
   </div>
 
@@ -183,49 +185,49 @@
     </div>
   </div>
 
-  <!-- p5 + sketch -->
+  <!-- p5 library and sketch (unchanged) -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-  <!-- (keep your same working p5 sketch here unchanged) -->
+  <!-- (keep your existing working p5 sketch here exactly as is) -->
 
   <!-- card stack animation -->
   <script>
-    const stack = document.querySelector('.card-stack');
-    let intervalTime = 4000;
-    let lastTime = 0;
-    function cycleCards() {
-      const cards = stack.querySelectorAll('.card');
-      if (cards.length <= 1) return;
-      const top = cards[0];
-      const second = cards[1];
-      top.style.transform = 'translateX(110%) rotate(0deg)';
-      top.style.opacity = '0';
-      second.style.transform = 'translateY(0) scale(1)';
-      second.style.zIndex = 3;
-      for (let i = 2; i < cards.length; i++) {
-        const y = 8 * (i - 1);
-        const scale = 1 - 0.03 * (i - 1);
-        cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-        cards[i].style.zIndex = 3 - i;
-      }
-      setTimeout(() => {
-        top.style.transition = 'none';
-        const n = cards.length;
-        top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
-        top.style.opacity = '1';
-        top.style.zIndex = 1;
-        stack.appendChild(top);
-        void top.offsetWidth;
-        top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
-      }, 600);
+  const stack = document.querySelector('.card-stack');
+  let intervalTime = 4000;
+  let lastTime = 0;
+  function cycleCards() {
+    const cards = stack.querySelectorAll('.card');
+    if (cards.length <= 1) return;
+    const top = cards[0];
+    const second = cards[1];
+    top.style.transform = 'translateX(110%) rotate(0deg)';
+    top.style.opacity = '0';
+    second.style.transform = 'translateY(0) scale(1)';
+    second.style.zIndex = 3;
+    for (let i = 2; i < cards.length; i++) {
+      const y = 8 * (i - 1);
+      const scale = 1 - 0.03 * (i - 1);
+      cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+      cards[i].style.zIndex = 3 - i;
     }
-    function animationLoop(timestamp) {
-      if (timestamp - lastTime >= intervalTime) {
-        cycleCards();
-        lastTime = timestamp;
-      }
-      requestAnimationFrame(animationLoop);
+    setTimeout(() => {
+      top.style.transition = 'none';
+      const n = cards.length;
+      top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
+      top.style.opacity = '1';
+      top.style.zIndex = 1;
+      stack.appendChild(top);
+      void top.offsetWidth;
+      top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+    }, 600);
+  }
+  function animationLoop(timestamp) {
+    if (timestamp - lastTime >= intervalTime) {
+      cycleCards();
+      lastTime = timestamp;
     }
     requestAnimationFrame(animationLoop);
+  }
+  requestAnimationFrame(animationLoop);
   </script>
 </body>
 </html>
