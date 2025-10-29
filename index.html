@@ -152,7 +152,7 @@
   </div>
 
 <script>
-/* --- CARD STACK LOOP --- (unchanged) --- */
+/* --- CARD STACK LOOP --- */
 const stack = document.querySelector('.card-stack');
 let intervalTime = 4000;
 let lastTime = 0;
@@ -187,7 +187,7 @@ requestAnimationFrame(animationLoop);
 /* --- P5.js SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.25;
+  const aspectRatio = 0.20; // slightly shorter banner height for balance
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -212,7 +212,7 @@ new p5(p => {
     p.push();
     p.translate(-p.width / 2, 0, 0);
 
-    const radius = p.height * 0.40;
+    const radius = p.height * 0.30; // smaller sphere
     const sphereCX = radius + p.height * 0.10;
 
     autoRotate += 0.003;
@@ -247,13 +247,13 @@ new p5(p => {
 
     textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
     textLayer.textFont('Orbitron, monospace');
-    const fontSize = h * 0.80;
+    const fontSize = h * 0.55; // smaller text
     textLayer.textSize(fontSize);
 
-    const radius = h * 0.40;
+    const radius = h * 0.30;
     const sphereCX = radius + h * 0.10;
-    const oSpacing = radius * 0.95;
-    const textStartX = sphereCX + oSpacing - 8;
+    const oSpacing = radius * 0.85;
+    const textStartX = sphereCX + oSpacing + w * 0.02; // padding from sphere
     const baseText = "wen Denver Emerson";
 
     textLayer.noStroke();
