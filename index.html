@@ -53,18 +53,18 @@
     padding:0 5%;
   }
 
-  /* --- NAME BANNER FRAME --- */
+  /* --- NAME BANNER FRAME (matches Tab Three) --- */
   .name-banner {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f7cfcf;               /* matches tab three */
-    border: 2px solid rgba(90, 49, 49, 0.8);
+    background: linear-gradient(to bottom, #f7cfcf 0%, #f4baba 100%);
+    border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    padding: 1.2% 1%;
+    padding: 1% 1%;
     margin-right: 4%;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
     z-index: 5;
   }
   @media (max-width: 480px) {
@@ -130,7 +130,7 @@
   .tab button{ all:unset; width:100%; height:100%; text-align:center; cursor:pointer; border-radius:0 !important; }
   .tab.manila{ background:#f7e9b8; color:#3a2f09; }
   .tab.green{ background:#cfeec7; color:#1f4d2b; }
-  .tab.pink{ background:#f7cfcf; color:#5a3131; }
+  .tab.pink{ background:linear-gradient(to bottom, #f7cfcf 0%, #f4baba 100%); color:#5a3131; }
   .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
   /* --- PORTRAIT LOCK FALLBACK --- */
@@ -162,7 +162,7 @@
   <div class="paper" aria-hidden="true"></div>
 
   <div class="folder-front">
-    <!-- Red banner frame -->
+    <!-- Red gradient banner frame -->
     <div class="name-banner">
       <div id="p5-banner"></div>
     </div>
@@ -212,7 +212,7 @@ requestAnimationFrame(animationLoop);
 /* --- P5.js SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.22; // slightly taller
+  const aspectRatio = 0.20; // slightly shorter, fits banner well
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -239,8 +239,8 @@ new p5(p => {
 
     const h = p.height;
     const w = p.width;
-    const radius = h * 0.26;
-    const sphereCX = radius + h * 0.17;
+    const radius = h * 0.24;
+    const sphereCX = radius + h * 0.16;
 
     autoRotate += 0.003;
     p.push();
@@ -275,11 +275,11 @@ new p5(p => {
 
     textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
     textLayer.textFont('Google Sans Mono, monospace');
-    const fontSize = h * 0.40;
+    const fontSize = h * 0.36; // reverted to previous comfortable size
     textLayer.textSize(fontSize);
 
-    const radius = h * 0.26;
-    const sphereCX = radius + h * 0.17;
+    const radius = h * 0.24;
+    const sphereCX = radius + h * 0.16;
     const oSpacing = radius * 0.70;
     const textStartX = sphereCX + oSpacing + w * 0.02;
     const baseText = "wen Denver Emerson";
