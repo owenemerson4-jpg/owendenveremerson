@@ -53,41 +53,29 @@
     padding:0 5%;
   }
 
-  /* --- NAME BANNER FRAME --- */
+  /* --- NAME BANNER FRAME (only tiny adjustments) --- */
   .name-banner {
     flex: 1;
     display: flex;
-    justify-content: flex-start; /* keep left-aligned */
+    justify-content: center;
     align-items: center;
-    background: transparent;     /* no background here */
-    border: none;                /* border on inner box only */
-    padding: 0;
-    margin-right: 4%;
-    z-index: 5;
-  }
-
-  /* The red box that hugs the content */
-  .name-box {
-    display: inline-block;
-    background: #EDAAAA; /* darker red tone */
+    background: #f7cfcf; /* flat red, same as Tab Three */
     border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    padding: 0.4% 0.6%; /* tighter all around; box hugs content */
+    /* tighter horizontal padding to reduce right margin */
+    padding: 0.6% 0.5%;
+    margin-right: 4%;
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    /* nudge a touch left & up on desktop without affecting layout */
-    transform: translate(-1.5%, -6%);
-  }
+    z-index: 5;
 
+    /* nudge entire box (with p5 inside) left/up */
+    transform: translate(-2%, -6%);
+  }
   @media (max-width: 480px) {
     .name-banner {
       width: 94%;
       margin: 4% auto;
-      justify-content: center;
-    }
-    .name-box {
-      transform: none; /* no nudge on mobile */
-      width: 100%;
-      box-sizing: border-box;
+      transform: none; /* keep mobile layout unchanged */
     }
   }
 
@@ -179,11 +167,9 @@
   <div class="paper" aria-hidden="true"></div>
 
   <div class="folder-front">
-    <!-- Red banner frame hugging content -->
+    <!-- Red banner frame -->
     <div class="name-banner">
-      <div class="name-box">
-        <div id="p5-banner"></div>
-      </div>
+      <div id="p5-banner"></div>
     </div>
 
     <!-- Card stack -->
@@ -258,8 +244,8 @@ new p5(p => {
 
     const h = p.height;
     const w = p.width;
-    const radius = h * 0.21; // stays inside the red box
-    const sphereCX = radius + h * 0.18; // slight rightward offset
+    const radius = h * 0.21; // reduced radius to stay inside red box
+    const sphereCX = radius + h * 0.18; // moved slightly right
 
     autoRotate += 0.003;
     p.push();
@@ -299,16 +285,13 @@ new p5(p => {
     const radius = h * 0.21;
     const sphereCX = radius + h * 0.18;
     const oSpacing = radius * 0.68;
-    // pull the right side in tighter by removing the extra + w*0.015
-    const textStartX = sphereCX + oSpacing;
+    const textStartX = sphereCX + oSpacing + w * 0.015;
     const baseText = "wen Denver Emerson";
 
-    // drop shadow
     textLayer.noStroke();
     textLayer.fill(0, 0, 0, 60);
     textLayer.text(baseText, textStartX + 2, h / 2 + 2);
 
-    // iridescent outlines
     pastelColors.forEach((rgb, idx) => {
       textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
       textLayer.strokeWeight(3);
@@ -316,13 +299,11 @@ new p5(p => {
       textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
     });
 
-    // thin white outline
     textLayer.stroke(255);
     textLayer.strokeWeight(1);
     textLayer.noFill();
     textLayer.text(baseText, textStartX, h / 2);
 
-    // white fill
     textLayer.noStroke();
     textLayer.fill(255);
     textLayer.text(baseText, textStartX, h / 2);
