@@ -53,29 +53,40 @@
     padding:0 5%;
   }
 
-  /* --- NAME BANNER FRAME (only tiny adjustments) --- */
+  /* --- NAME BANNER FRAME (layout unchanged; now transparent) --- */
   .name-banner {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f7cfcf; /* flat red, same as Tab Three */
+    background: transparent;      /* red box moved to inner wrapper */
+    border: none;
+    padding: 0;                   /* padding moved to inner wrapper */
+    margin-right: 4%;
+    z-index: 5;
+  }
+
+  /* --- Tight red box that hugs the p5 canvas (moves with it) --- */
+  .name-inner {
+    display: inline-block;
+    background: #f7cfcf;               /* same as Tab Three */
     border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    /* tighter horizontal padding to reduce right margin */
-    padding: 0.6% 0.5%;
-    margin-right: 4%;
+    padding: 0.6% 0.5%;                /* slightly reduced horizontal padding */
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    z-index: 5;
-
-    /* nudge entire box (with p5 inside) left/up */
-    transform: translate(-2%, -6%);
+    transform: translate(-2%, -6%);    /* nudge up & left (desktop only) */
   }
+
   @media (max-width: 480px) {
     .name-banner {
       width: 94%;
       margin: 4% auto;
-      transform: none; /* keep mobile layout unchanged */
+    }
+    .name-inner {
+      transform: none;                  /* keep mobile layout identical */
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
     }
   }
 
@@ -167,9 +178,12 @@
   <div class="paper" aria-hidden="true"></div>
 
   <div class="folder-front">
-    <!-- Red banner frame -->
+    <!-- Red banner frame (transparent container) -->
     <div class="name-banner">
-      <div id="p5-banner"></div>
+      <!-- Tight red box + p5 sketch move together -->
+      <div class="name-inner">
+        <div id="p5-banner"></div>
+      </div>
     </div>
 
     <!-- Card stack -->
@@ -285,7 +299,8 @@ new p5(p => {
     const radius = h * 0.21;
     const sphereCX = radius + h * 0.18;
     const oSpacing = radius * 0.68;
-    const textStartX = sphereCX + oSpacing + w * 0.015;
+    /* tighten right margin a bit */
+    const textStartX = sphereCX + oSpacing + w * 0.008;
     const baseText = "wen Denver Emerson";
 
     textLayer.noStroke();
