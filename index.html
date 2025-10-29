@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Folder — Scandinavian Flat Version (Final Portrait Lock)</title>
 
-<!-- Orbitron font for p5 sketch -->
+<!-- Font: Google Sans Mono -->
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Mono:wght@500&display=swap" rel="stylesheet">
-
 
 <!-- p5.js -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
@@ -49,25 +48,43 @@
   .folder-front {
     position:absolute; bottom:0; left:0; width:100%; top:20%;
     background:linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
-    z-index:4;
+    z-index:4; border-top:2px solid rgba(0,0,0,0.2);
     display:flex; flex-direction:row; align-items:center; justify-content:space-between;
     padding:0 5%;
   }
 
+  /* --- NAME BANNER FRAME --- */
+  .name-banner {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f7cfcf;               /* matches tab three */
+    border: 2px solid rgba(90, 49, 49, 0.8);
+    border-radius: 0;
+    padding: 1.2% 1%;
+    margin-right: 4%;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    z-index: 5;
+  }
+  @media (max-width: 480px) {
+    .name-banner {
+      width: 94%;
+      margin: 4% auto;
+    }
+  }
+
   /* --- P5 CONTAINER --- */
   #p5-banner {
-    position:relative;
-    flex:1;
-    z-index:5;
+    position: relative;
+    flex: 1;
+    height: auto;
+    z-index: 6;
   }
-  #p5-banner canvas {
-    position:absolute;
-    top:0;
-    left:0;
+  canvas {
     width:100% !important;
     height:auto !important;
     background:transparent !important;
-    z-index:10;
     pointer-events:none;
   }
 
@@ -101,7 +118,7 @@
   @media (max-width:900px){ .card-stack{ width:34%; } }
   @media (max-width:480px){
     .folder-front { flex-direction:column; align-items:center; }
-    #p5-banner { order:-1; width:100%; }
+    .name-banner { order:-1; width:100%; margin-bottom:4%; }
     .card-stack { width:80%; margin-top:4%; }
   }
 
@@ -131,19 +148,26 @@
 </style>
 </head>
 <body>
-  <div class="cloud small"></div>
-  <div class="cloud large"></div>
+  <!-- Clouds -->
+  <div class="cloud small" aria-hidden="true"></div>
+  <div class="cloud large" aria-hidden="true"></div>
 
-  <div class="folder-back"></div>
+  <!-- Folder Structure -->
+  <div class="folder-back" aria-hidden="true"></div>
   <div class="tabs">
     <div class="tab manila"><button>Tab One</button></div>
     <div class="tab green"><button>Tab Two</button></div>
     <div class="tab pink"><button>Tab Three</button></div>
   </div>
-  <div class="paper"></div>
+  <div class="paper" aria-hidden="true"></div>
 
   <div class="folder-front">
-    <div id="p5-banner"></div>
+    <!-- Red banner frame -->
+    <div class="name-banner">
+      <div id="p5-banner"></div>
+    </div>
+
+    <!-- Card stack -->
     <div class="card-stack">
       <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
       <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
@@ -187,13 +211,8 @@ requestAnimationFrame(animationLoop);
 
 /* --- P5.js SKETCH --- */
 new p5(p => {
-  let gridTex, textBack, textFront, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.20; // banner height
-  const pastelColors = [
-    [255,182,193], // pink
-    [173,216,230], // blue
-    [152,251,152]  // green
-  ];
+  let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
+  const aspectRatio = 0.22; // slightly taller
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -203,16 +222,14 @@ new p5(p => {
     p.setAttributes('alpha', true);
     p.noStroke();
 
-    // sphere texture
     gridTex = p.createGraphics(512, 256);
     gridTex.clear();
     drawGridTexture(gridTex);
 
-    // two text layers: back (outlined “O”), front (full name)
-    textBack  = p.createGraphics(w, h); textBack.pixelDensity(1);  textBack.clear();
-    textFront = p.createGraphics(w, h); textFront.pixelDensity(1); textFront.clear();
-
-    updateTextLayers(w, h);
+    textLayer = p.createGraphics(w, h);
+    textLayer.pixelDensity(1);
+    textLayer.clear();
+    updateTextLayer(w, h);
   };
 
   p.draw = function() {
@@ -222,81 +239,70 @@ new p5(p => {
 
     const h = p.height;
     const w = p.width;
+    const radius = h * 0.26;
+    const sphereCX = radius + h * 0.17;
 
-    // Geometry tuning
-    const radius   = h * 0.24;        // smaller globe
-    const sphereCX = radius + h * 0.16; // move closer to “w” (more to the right)
-
-    // 1) BACK TEXT (outlined “O”) — behind sphere
-    p.image(textBack, 0, -h / 2);
-
-    // 2) SPHERE
     autoRotate += 0.003;
     p.push();
     p.translate(sphereCX, 0, 0);
     const rotY = p.map(p.mouseX, 0, w, -p.PI, p.PI);
-    const rotX = p.map(p.mouseY, 0, h, -p.PI/2, p.PI/2);
+    const rotX = p.map(p.mouseY, 0, h, -p.PI / 2, p.PI / 2);
     p.rotateY(rotY + autoRotate);
     p.rotateX(rotX * 0.5);
+
     p.fill(255, 255, 255, 150);
     p.texture(gridTex);
     p.sphere(radius, sphereDetail, sphereDetail);
     p.pop();
 
-    // 3) FRONT TEXT (the rest of the name)
-    p.image(textFront, 0, -h / 2);
+    updateTextLayer(p.width, p.height);
+    p.image(textLayer, 0, -p.height / 2);
 
     p.pop();
   };
 
-  function updateTextLayers(w, h) {
-    // ensure sizes
-    if (textBack.width !== w || textBack.height !== h)  textBack.resizeCanvas(w, h);
-    if (textFront.width !== w || textFront.height !== h) textFront.resizeCanvas(w, h);
-    textBack.clear();
-    textFront.clear();
+  function updateTextLayer(w, h) {
+    if (textLayer.width !== w || textLayer.height !== h) {
+      textLayer.resizeCanvas(w, h);
+    }
+    textLayer.clear();
 
-    // shared metrics
-    const radius   = h * 0.24;
-    const sphereCX = radius + h * 0.16;
-    });
+    const pastelColors = [
+      [255, 182, 193],
+      [173, 216, 230],
+      [152, 251, 152]
+    ];
 
+    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
+    textLayer.textFont('Google Sans Mono, monospace');
+    const fontSize = h * 0.40;
+    textLayer.textSize(fontSize);
 
-    /* --- FRONT: draw “wen Denver Emerson” smaller & stop before card stack --- */
-    textFront.textAlign(textFront.LEFT, textFront.CENTER);
-    textFront.textFont('Google Sans Mono, monospace');
+    const radius = h * 0.26;
+    const sphereCX = radius + h * 0.17;
+    const oSpacing = radius * 0.70;
+    const textStartX = sphereCX + oSpacing + w * 0.02;
+    const baseText = "wen Denver Emerson";
 
-    const frontSize = h * 0.38; // reduced further
-    textFront.textSize(frontSize);
+    textLayer.noStroke();
+    textLayer.fill(0, 0, 0, 60);
+    textLayer.text(baseText, textStartX + 2, h / 2 + 2);
 
-    // start the text closer to the globe (tighten with smaller spacing)
-    const oSpacing   = radius * 0.70;
-    const textStartX = sphereCX + oSpacing + w * 0.015;
-    const baseText   = "wen Denver Emerson";
-
-    // soft shadow
-    textFront.noStroke();
-    textFront.fill(0, 0, 0, 60);
-    textFront.text(baseText, textStartX + 2, h / 2 + 2);
-
-    // iridescent outline
     pastelColors.forEach((rgb, idx) => {
-      textFront.stroke(rgb[0], rgb[1], rgb[2], 220);
-      textFront.strokeWeight(3);
-      textFront.noFill();
-      textFront.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
+      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textLayer.strokeWeight(3);
+      textLayer.noFill();
+      textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
     });
 
-    // thin white outline
-    textFront.stroke(255);
-    textFront.strokeWeight(1);
-    textFront.noFill();
-    textFront.text(baseText, textStartX, h / 2);
+    textLayer.stroke(255);
+    textLayer.strokeWeight(1);
+    textLayer.noFill();
+    textLayer.text(baseText, textStartX, h / 2);
 
-    // white fill
-    textFront.noStroke();
-    textFront.fill(255);
-    textFront.text(baseText, textStartX, h / 2);
+    textLayer.noStroke();
+    textLayer.fill(255);
+    textLayer.text(baseText, textStartX, h / 2);
   }
 
   function drawGridTexture(pg) {
@@ -323,14 +329,9 @@ new p5(p => {
     const parent = document.getElementById('p5-banner');
     const w = parent.offsetWidth, h = w * aspectRatio;
     p.resizeCanvas(w, h);
-    // rebuild layers to new size
-    textBack.resizeCanvas(w, h);
-    textFront.resizeCanvas(w, h);
-    updateTextLayers(w, h);
+    updateTextLayer(w, h);
   };
 });
 </script>
-
-
 </body>
 </html>
