@@ -93,20 +93,20 @@
   .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
   /* --- P5 CANVAS POSITIONING --- */
-  #p5-holder {
-    position: absolute;
-    z-index: 8;          /* above manila section, below any overlays */
-    pointer-events: none;/* let clicks go through */
-    left: 2%;            /* align with Tab One’s left edge */
-    top: 18.5%;          /* just below white–manila seam */
-    width: 65%;          /* keeps clear of the card stack */
-  }
+#p5-holder {
+  position: absolute;
+  z-index: 8;
+  pointer-events: none;
+  left: 2%;
+  top: 21%;        /* ↓ lowered from 18.5% so it clears the white–manila seam */
+  width: 60%;      /* ↓ slightly smaller overall scale to keep proportions neat */
+}
 
-  canvas.p5Canvas {
-    width: 100% !important;
-    height: auto !important;
-    pointer-events: auto !important; /* canvas still receives mouse for interactivity */
-  }
+canvas.p5Canvas {
+  width: 100% !important;
+  height: auto !important;
+  pointer-events: auto !important;
+}
 
   /* --- PORTRAIT LOCK FALLBACK --- */
   @media screen and (max-width:900px) and (orientation:landscape){
