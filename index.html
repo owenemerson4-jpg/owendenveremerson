@@ -96,10 +96,10 @@
   #p5-holder {
     position: absolute;
     z-index: 10;
-    pointer-events: none; /* allow interaction below */
-    left: 2%; /* aligns with tab one’s left edge */
-    top: 23%; /* between paper bottom and card stack top */
-    width: 65%; /* keeps right edge short of card stack */
+    pointer-events: none;
+    left: 2%;       /* aligned with Tab One left edge */
+    top: 23%;       /* between paper bottom and card stack top */
+    width: 65%;     /* right edge stays clear of card stack */
   }
 
   canvas.p5Canvas {
@@ -156,8 +156,6 @@ let gridTex;
 let textLayer;
 let sphereDetail = 50;
 let autoRotate = 0;
-
-// Smoothed layout targets
 let targetRadius = 0;
 let targetSphereCX = 0;
 let radius = 0;
@@ -213,13 +211,13 @@ function draw() {
 
 function computeLayoutTargets() {
   const baseScale = constrain(width / 900, 0.4, 1);
-  targetRadius = height * 0.35 * baseScale;
-  targetSphereCX = targetRadius + height * 0.08 * baseScale;
+  targetRadius = height * 0.28 * baseScale;
+  targetSphereCX = targetRadius + height * 0.14 * baseScale;
 }
 
 function drawSphereOutline(r) {
   const outlineColor = '#97717E';
-  const cx = (r + height * 0.08);
+  const cx = (r + height * 0.14);
   const cy = height / 2;
   const d = r * 2;
 
@@ -266,8 +264,8 @@ function updateTextLayer(r = 0, sCX = 0) {
   textLayer.textFont('IBM Plex Sans, monospace');
 
   const baseText = "wen Denver Emerson";
-  const availableW = width - (sCX + r * 1.2);
-  let fontSize = height * 0.8;
+  const availableW = width - (sCX + r * 1.3);
+  let fontSize = height * 1.0;
   textLayer.textSize(fontSize);
   let textW = textLayer.textWidth(baseText);
   if (textW > availableW) {
@@ -275,7 +273,7 @@ function updateTextLayer(r = 0, sCX = 0) {
     textLayer.textSize(fontSize);
   }
 
-  const textStartX = sCX + r * 0.9;
+  const textStartX = sCX + r * 1.05;
   const baselineY = height / 2;
 
   pastelColors.forEach((rgb, idx) => {
