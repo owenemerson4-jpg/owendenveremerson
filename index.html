@@ -53,18 +53,18 @@
     padding:0 5%;
   }
 
-  /* --- NAME BANNER FRAME (matches Tab Three) --- */
+  /* --- NAME BANNER FRAME --- */
   .name-banner {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(to bottom, #f7cfcf 0%, #f4baba 100%);
+    background: #f7cfcf; /* flat red, same as Tab Three */
     border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    padding: 1% 1%;
+    padding: 0.6% 0.8%; /* slimmer, tighter fit */
     margin-right: 4%;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     z-index: 5;
   }
   @media (max-width: 480px) {
@@ -130,7 +130,7 @@
   .tab button{ all:unset; width:100%; height:100%; text-align:center; cursor:pointer; border-radius:0 !important; }
   .tab.manila{ background:#f7e9b8; color:#3a2f09; }
   .tab.green{ background:#cfeec7; color:#1f4d2b; }
-  .tab.pink{ background:linear-gradient(to bottom, #f7cfcf 0%, #f4baba 100%); color:#5a3131; }
+  .tab.pink{ background:#f7cfcf; color:#5a3131; }
   .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
   /* --- PORTRAIT LOCK FALLBACK --- */
@@ -162,7 +162,7 @@
   <div class="paper" aria-hidden="true"></div>
 
   <div class="folder-front">
-    <!-- Red gradient banner frame -->
+    <!-- Red banner frame -->
     <div class="name-banner">
       <div id="p5-banner"></div>
     </div>
@@ -212,7 +212,7 @@ requestAnimationFrame(animationLoop);
 /* --- P5.js SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.20; // slightly shorter, fits banner well
+  const aspectRatio = 0.18; // slimmer banner, fits tighter
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -239,8 +239,8 @@ new p5(p => {
 
     const h = p.height;
     const w = p.width;
-    const radius = h * 0.24;
-    const sphereCX = radius + h * 0.16;
+    const radius = h * 0.21; // reduced radius to stay inside red box
+    const sphereCX = radius + h * 0.18; // moved slightly right
 
     autoRotate += 0.003;
     p.push();
@@ -257,7 +257,6 @@ new p5(p => {
 
     updateTextLayer(p.width, p.height);
     p.image(textLayer, 0, -p.height / 2);
-
     p.pop();
   };
 
@@ -275,13 +274,13 @@ new p5(p => {
 
     textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
     textLayer.textFont('Google Sans Mono, monospace');
-    const fontSize = h * 0.36; // reverted to previous comfortable size
+    const fontSize = h * 0.36;
     textLayer.textSize(fontSize);
 
-    const radius = h * 0.24;
-    const sphereCX = radius + h * 0.16;
-    const oSpacing = radius * 0.70;
-    const textStartX = sphereCX + oSpacing + w * 0.02;
+    const radius = h * 0.21;
+    const sphereCX = radius + h * 0.18;
+    const oSpacing = radius * 0.68;
+    const textStartX = sphereCX + oSpacing + w * 0.015;
     const baseText = "wen Denver Emerson";
 
     textLayer.noStroke();
