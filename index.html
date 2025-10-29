@@ -259,38 +259,14 @@ new p5(p => {
     // shared metrics
     const radius   = h * 0.24;
     const sphereCX = radius + h * 0.16;
-
-    /* --- BACK: draw a stroked “O” behind the sphere --- */
-    textBack.textAlign(textBack.LEFT, textBack.CENTER);
-    textBack.textFont('Google Sans Mono, monospace');
-
-    // Size this “O” to lightly contain the sphere (slightly larger)
-    const oFontSize = radius * 2 * 1.08;
-    textBack.textSize(oFontSize);
-
-    const oWidth = textBack.textWidth('O');
-    const oX = sphereCX - oWidth / 2; // center “O” horizontally on the sphere
-    const oY = h / 2;
-
-    // pastel halo outline passes
-    pastelColors.forEach((rgb, idx) => {
-      textBack.stroke(rgb[0], rgb[1], rgb[2], 220);
-      textBack.strokeWeight(3);
-      textBack.noFill();
-      textBack.text('O', oX + idx * 0.5, oY + idx * 0.3);
     });
-    // thin white outline
-    textBack.stroke(255);
-    textBack.strokeWeight(1);
-    textBack.noFill();
-    textBack.text('O', oX, oY);
-    // no fill — we want just the outline behind the sphere
+
 
     /* --- FRONT: draw “wen Denver Emerson” smaller & stop before card stack --- */
     textFront.textAlign(textFront.LEFT, textFront.CENTER);
     textFront.textFont('Google Sans Mono, monospace');
 
-    const frontSize = h * 0.36; // reduced further
+    const frontSize = h * 0.38; // reduced further
     textFront.textSize(frontSize);
 
     // start the text closer to the globe (tighten with smaller spacing)
