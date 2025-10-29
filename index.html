@@ -95,11 +95,11 @@
   /* --- P5 CANVAS POSITIONING --- */
   #p5-holder {
     position: absolute;
-    z-index: 10;
+    z-index: 8;          /* above manila section, below card stack */
     pointer-events: none;
-    left: 2%;       /* aligned with Tab One left edge */
-    top: 18.5%;     /* raised so upper border sits just below manila–white seam */
-    width: 65%;     /* right edge stays clear of card stack */
+    left: 2%;            /* aligns with Tab One */
+    top: 18.5%;          /* just below white–manila seam */
+    width: 65%;          /* stops before card stack */
   }
 
   canvas.p5Canvas {
@@ -127,7 +127,7 @@
   <div class="cloud small" aria-hidden="true"></div>
   <div class="cloud large" aria-hidden="true"></div>
 
-  <!-- Folder -->
+  <!-- Folder layers -->
   <div class="folder-back" aria-hidden="true"></div>
   <div class="tabs">
     <div class="tab manila"><button>Tab One</button></div>
@@ -136,23 +136,75 @@
   </div>
   <div class="paper" aria-hidden="true"></div>
 
-<div id="p5-holder"></div>
+  <!-- p5 sketch (now outside folder-front, so it's visible and layered correctly) -->
+  <div id="p5-holder"></div>
 
-<div class="folder-front">
-  <!-- Card stack -->
-  <div class="card-stack">
-    <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
-    <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
-    <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
-    <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
+  <!-- Folder front and card stack -->
+  <div class="folder-front">
+    <div class="card-stack">
+      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
+      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
+      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
+      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
+    </div>
   </div>
-</div>
 
+  <!-- p5 library -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- the full final p5 sketch remains unchanged -->
+  <!-- p5 sketch -->
   <script>
-  /* (same JavaScript from the previous version, no internal changes needed) */
+  /* (use the final tweaked p5.js sketch code from the previous working version) */
+  </script>
+
+  <!-- card stack animation -->
+  <script>
+  const stack = document.querySelector('.card-stack');
+  let intervalTime = 4000;
+  let lastTime = 0;
+
+  function cycleCards() {
+    const cards = stack.querySelectorAll('.card');
+    if (cards.length <= 1) return;
+    const top = cards[0];
+    const second = cards[1];
+
+    top.style.transform = 'translateX(110%) rotate(0deg)';
+    top.style.opacity = '0';
+    second.style.transform = 'translateY(0) scale(1)';
+    second.style.zIndex = 3;
+
+    for (let i = 2; i < cards.length; i++) {
+      const y = 8 * (i - 1);
+      const scale = 1 - 0.03 * (i - 1);
+      cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+      cards[i].style.zIndex = 3 - i;
+    }
+
+    setTimeout(() => {
+      top.style.transition = 'none';
+      const n = cards.length;
+      top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
+      top.style.opacity = '1';
+      top.style.zIndex = 1;
+      stack.appendChild(top);
+      void top.offsetWidth;
+      top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+    }, 600);
+  }
+
+  function animationLoop(timestamp) {
+    if (timestamp - lastTime >= intervalTime) {
+      cycleCards();
+      lastTime = timestamp;
+    }
+    requestAnimationFrame(animationLoop);
+  }
+  requestAnimationFrame(animationLoop);
+
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('portrait').catch(() => {});
+  }
   </script>
 </body>
 </html>
