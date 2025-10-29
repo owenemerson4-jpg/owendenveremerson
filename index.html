@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder — Scandinavian Flat Version (Portrait Locked Fixed)</title>
+<title>Folder — Scandinavian Flat Version (Final Portrait Lock)</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -111,6 +111,16 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.25s ease, transform 0.15s ease;
+    border-radius: 0 !important; /* <-- enforce square edges everywhere */
+  }
+
+  .tab button {
+    all: unset;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0 !important;
   }
 
   .tab.manila { background: #f7e9b8; color: #3a2f09; }
@@ -153,7 +163,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    pointer-events: none; /* disable interaction */
+    pointer-events: none;
     user-select: none;
   }
 
@@ -173,21 +183,24 @@
   }
 
   /* --- PORTRAIT LOCK FALLBACK --- */
-  /* Only applies when screen is small (mobile/tablet) AND landscape */
   @media screen and (max-width: 900px) and (orientation: landscape) {
     body::before {
       content: "Please rotate your device upright";
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: #eaf7ff;
-      color: #333;
+      /* Match gradient sky for aesthetic consistency */
+      background: linear-gradient(to bottom, #bfe5ff 0%, #eaf7ff 80%);
+      color: #1e1e1e;
       font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.03em;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
+      text-shadow: 0 1px 3px rgba(255,255,255,0.6);
       z-index: 9999;
     }
   }
@@ -264,7 +277,7 @@ requestAnimationFrame(animationLoop);
 /* --- PORTRAIT ORIENTATION LOCK --- */
 if (screen.orientation && screen.orientation.lock) {
   screen.orientation.lock('portrait').catch(() => {
-    // CSS handles fallback message for unsupported browsers
+    // fallback handled by CSS overlay
   });
 }
 </script>
