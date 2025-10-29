@@ -187,8 +187,13 @@ requestAnimationFrame(animationLoop);
 
 /* --- P5.js SKETCH --- */
 new p5(p => {
-  let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.20;
+  let gridTex, textBack, textFront, sphereDetail = 50, autoRotate = 0;
+  const aspectRatio = 0.20; // banner height
+  const pastelColors = [
+    [255,182,193], // pink
+    [173,216,230], // blue
+    [152,251,152]  // green
+  ];
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -198,14 +203,16 @@ new p5(p => {
     p.setAttributes('alpha', true);
     p.noStroke();
 
+    // sphere texture
     gridTex = p.createGraphics(512, 256);
     gridTex.clear();
     drawGridTexture(gridTex);
 
-    textLayer = p.createGraphics(w, h);
-    textLayer.pixelDensity(1);
-    textLayer.clear();
-    updateTextLayer(w, h);
+    // two text layers: back (outlined “O”), front (full name)
+    textBack  = p.createGraphics(w, h); textBack.pixelDensity(1);  textBack.clear();
+    textFront = p.createGraphics(w, h); textFront.pixelDensity(1); textFront.clear();
+
+    updateTextLayers(w, h);
   };
 
   p.draw = function() {
@@ -213,69 +220,107 @@ new p5(p => {
     p.push();
     p.translate(-p.width / 2, 0, 0);
 
-    const radius = p.height * 0.26; // smaller sphere
-    const sphereCX = radius + p.height * 0.10;
+    const h = p.height;
+    const w = p.width;
 
+    // Geometry tuning
+    const radius   = h * 0.24;        // smaller globe
+    const sphereCX = radius + h * 0.16; // move closer to “w” (more to the right)
+
+    // 1) BACK TEXT (outlined “O”) — behind sphere
+    p.image(textBack, 0, -h / 2);
+
+    // 2) SPHERE
     autoRotate += 0.003;
     p.push();
     p.translate(sphereCX, 0, 0);
-    const rotY = p.map(p.mouseX, 0, p.width, -p.PI, p.PI);
-    const rotX = p.map(p.mouseY, 0, p.height, -p.PI / 2, p.PI / 2);
+    const rotY = p.map(p.mouseX, 0, w, -p.PI, p.PI);
+    const rotX = p.map(p.mouseY, 0, h, -p.PI/2, p.PI/2);
     p.rotateY(rotY + autoRotate);
     p.rotateX(rotX * 0.5);
-
     p.fill(255, 255, 255, 150);
     p.texture(gridTex);
     p.sphere(radius, sphereDetail, sphereDetail);
     p.pop();
 
-    updateTextLayer(p.width, p.height);
-    p.image(textLayer, 0, -p.height / 2);
+    // 3) FRONT TEXT (the rest of the name)
+    p.image(textFront, 0, -h / 2);
+
     p.pop();
   };
 
-  function updateTextLayer(w, h) {
-    if (textLayer.width !== w || textLayer.height !== h) {
-      textLayer.resizeCanvas(w, h);
-    }
-    textLayer.clear();
+  function updateTextLayers(w, h) {
+    // ensure sizes
+    if (textBack.width !== w || textBack.height !== h)  textBack.resizeCanvas(w, h);
+    if (textFront.width !== w || textFront.height !== h) textFront.resizeCanvas(w, h);
+    textBack.clear();
+    textFront.clear();
 
-    const pastelColors = [
-      [255, 182, 193],
-      [173, 216, 230],
-      [152, 251, 152]
-    ];
+    // shared metrics
+    const radius   = h * 0.24;
+    const sphereCX = radius + h * 0.16;
 
-    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
-    textLayer.textFont('Google Sans Mono, monospace');
-    const fontSize = h * 0.42; // smaller text size
-    textLayer.textSize(fontSize);
+    /* --- BACK: draw a stroked “O” behind the sphere --- */
+    textBack.textAlign(textBack.LEFT, textBack.CENTER);
+    textBack.textFont('Google Sans Mono, monospace');
 
-    const radius = h * 0.26;
-    const sphereCX = radius + h * 0.10;
-    const oSpacing = radius * 0.85;
-    const textStartX = sphereCX + oSpacing + w * 0.06; // add right margin
-    const baseText = "wen Denver Emerson";
+    // Size this “O” to lightly contain the sphere (slightly larger)
+    const oFontSize = radius * 2 * 1.08;
+    textBack.textSize(oFontSize);
 
-    textLayer.noStroke();
-    textLayer.fill(0, 0, 0, 60);
-    textLayer.text(baseText, textStartX + 2, h / 2 + 2);
+    const oWidth = textBack.textWidth('O');
+    const oX = sphereCX - oWidth / 2; // center “O” horizontally on the sphere
+    const oY = h / 2;
 
+    // pastel halo outline passes
     pastelColors.forEach((rgb, idx) => {
-      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
-      textLayer.strokeWeight(3);
-      textLayer.noFill();
-      textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
+      textBack.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textBack.strokeWeight(3);
+      textBack.noFill();
+      textBack.text('O', oX + idx * 0.5, oY + idx * 0.3);
+    });
+    // thin white outline
+    textBack.stroke(255);
+    textBack.strokeWeight(1);
+    textBack.noFill();
+    textBack.text('O', oX, oY);
+    // no fill — we want just the outline behind the sphere
+
+    /* --- FRONT: draw “wen Denver Emerson” smaller & stop before card stack --- */
+    textFront.textAlign(textFront.LEFT, textFront.CENTER);
+    textFront.textFont('Google Sans Mono, monospace');
+
+    const frontSize = h * 0.36; // reduced further
+    textFront.textSize(frontSize);
+
+    // start the text closer to the globe (tighten with smaller spacing)
+    const oSpacing   = radius * 0.70;
+    const textStartX = sphereCX + oSpacing + w * 0.015;
+    const baseText   = "wen Denver Emerson";
+
+    // soft shadow
+    textFront.noStroke();
+    textFront.fill(0, 0, 0, 60);
+    textFront.text(baseText, textStartX + 2, h / 2 + 2);
+
+    // iridescent outline
+    pastelColors.forEach((rgb, idx) => {
+      textFront.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textFront.strokeWeight(3);
+      textFront.noFill();
+      textFront.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
     });
 
-    textLayer.stroke(255);
-    textLayer.strokeWeight(1);
-    textLayer.noFill();
-    textLayer.text(baseText, textStartX, h / 2);
+    // thin white outline
+    textFront.stroke(255);
+    textFront.strokeWeight(1);
+    textFront.noFill();
+    textFront.text(baseText, textStartX, h / 2);
 
-    textLayer.noStroke();
-    textLayer.fill(255);
-    textLayer.text(baseText, textStartX, h / 2);
+    // white fill
+    textFront.noStroke();
+    textFront.fill(255);
+    textFront.text(baseText, textStartX, h / 2);
   }
 
   function drawGridTexture(pg) {
@@ -302,10 +347,14 @@ new p5(p => {
     const parent = document.getElementById('p5-banner');
     const w = parent.offsetWidth, h = w * aspectRatio;
     p.resizeCanvas(w, h);
-    updateTextLayer(w, h);
+    // rebuild layers to new size
+    textBack.resizeCanvas(w, h);
+    textFront.resizeCanvas(w, h);
+    updateTextLayers(w, h);
   };
 });
 </script>
+
 
 </body>
 </html>
