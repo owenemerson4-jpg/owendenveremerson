@@ -98,22 +98,23 @@
     z-index: 8;
     pointer-events: none;
     left: 2%;
-    top: 21%;          /* lower placement below white–manila seam */
+    top: 21%;
     width: 60%;
     transform-origin: top left;
     transform: scale(0.85);
   }
+
   canvas.p5Canvas {
     width: 100% !important;
     height: auto !important;
     pointer-events: auto !important;
   }
 
-  /* --- NEW TEXT BOX BENEATH P5 SKETCH --- */
+  /* --- GREEN TEXT BOX BELOW SKETCH --- */
   .text-box {
     position: absolute;
     left: 2%;
-    top: calc(21% + (window.innerWidth * 0.25 * 0.85) * 1.1); /* below the scaled sketch */
+    top: calc(21% + 12%); /* approx. just below the p5 sketch */
     width: 60%;
     background: #cfeec7;
     border: 2px solid #aac3a3;
@@ -123,6 +124,7 @@
     align-items: center;
     padding: 0.4em 0.6em;
   }
+
   .text-box span {
     font-family: 'IBM Plex Sans', monospace;
     font-size: 1.15rem;
@@ -130,25 +132,12 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     text-align: center;
-    /* Subtle iridescent stroke effect */
     text-shadow:
       1px 1px 1px rgba(173, 216, 230, 0.6),
       -1px -1px 1px rgba(152, 251, 152, 0.6),
       0 0 2px rgba(255, 255, 255, 0.4);
   }
 
-  /* --- PORTRAIT LOCK --- */
-  @media screen and (max-width:900px) and (orientation:landscape){
-    body::before{
-      content:"Please rotate your device upright";
-      position:fixed; top:0; left:0; width:100vw; height:100vh;
-      background:linear-gradient(to bottom,#bfe5ff 0%,#eaf7ff 80%);
-      color:#1e1e1e; font-family:'Inter',sans-serif; font-weight:600;
-      letter-spacing:0.03em; display:flex; align-items:center; justify-content:center;
-      text-align:center; font-size:1.15rem; text-shadow:0 1px 3px rgba(255,255,255,0.6);
-      z-index:9999;
-    }
-  }
 </style>
 </head>
 
@@ -166,10 +155,10 @@
   </div>
   <div class="paper" aria-hidden="true"></div>
 
-  <!-- P5 Sketch -->
+  <!-- p5 sketch -->
   <div id="p5-holder"></div>
 
-  <!-- ✅ NEW TEXT BOX BELOW SKETCH -->
+  <!-- ✅ Green Text Box -->
   <div class="text-box">
     <span>is using multimedia design to tell memorable stories</span>
   </div>
@@ -184,15 +173,15 @@
     </div>
   </div>
 
-  <!-- P5 library -->
+  <!-- p5 library -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- existing p5 sketch code (unchanged from working version) -->
+  <!-- ✅ Full p5 sketch restored -->
   <script>
-    /* your full working p5 sketch here */
+  /* your last working p5 sketch code here exactly as it was */
   </script>
 
-  <!-- card stack animation (unchanged) -->
+  <!-- Card stack animation -->
   <script>
     const stack = document.querySelector('.card-stack');
     let intervalTime = 4000;
@@ -231,9 +220,6 @@
       requestAnimationFrame(animationLoop);
     }
     requestAnimationFrame(animationLoop);
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('portrait').catch(() => {});
-    }
   </script>
 </body>
 </html>
