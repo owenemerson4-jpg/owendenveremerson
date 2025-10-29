@@ -49,52 +49,49 @@
     position:absolute; bottom:0; left:0; width:100%; top:20%;
     background:linear-gradient(to bottom,#f5e0a1 0%,#f2d58b 100%);
     z-index:4; border-top:2px solid rgba(0,0,0,0.2);
-    display:flex; flex-direction:row; align-items:center; justify-content:space-between;
+    display:flex; flex-direction:row; align-items:flex-start; justify-content:space-between;
     padding:0 5%;
   }
 
-  /* --- NAME BANNER FRAME --- */
+  /* --- TABS --- */
+  .tabs { position:absolute; top:6%; left:0; width:100%; display:flex; gap:1%; padding-left:2%; align-items:flex-end; z-index:5; }
+  .tab { flex:0 0 18%; height:8vh; display:flex; align-items:center; justify-content:center;
+         border:2px solid rgba(0,0,0,0.18); font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+         cursor:pointer; transition:background 0.25s ease, transform 0.15s ease; border-radius:0 !important; }
+  .tab button{ all:unset; width:100%; height:100%; text-align:center; cursor:pointer; border-radius:0 !important; }
+  .tab.manila{ background:#f7e9b8; color:#3a2f09; }
+  .tab.green{ background:#cfeec7; color:#1f4d2b; }
+  .tab.pink{ background:#f7cfcf; color:#5a3131; }
+  .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
+
+  /* --- NAME BANNER FRAME (absolute, auto-sized to content) --- */
   .name-banner {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f2b0b0; /* darker red tone */
+    position: absolute;           /* We'll position it via JS */
+    background: #EDAAAA;          /* slightly darker than Tab Three, flat */
     border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    padding: 0.5% 0.5%; /* smaller padding: tighter top/bottom, right/left */
-    margin-right: 2%;
+    padding: 0;                   /* margins handled inside p5 for symmetry */
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    z-index: 5;
-    position: relative;
-    top: -4%; /* raise upward on desktop */
-    left: -3%; /* shift left to align with Tab One */
-  }
-  @media (max-width: 480px) {
-    .name-banner {
-      width: 94%;
-      margin: 4% auto;
-      top: 0;
-      left: 0;
-    }
+    z-index: 6;
+    /* width/height set by JS to hug the p5 canvas */
   }
 
-  /* --- P5 CONTAINER --- */
+  /* --- P5 CONTAINER (auto-sized) --- */
   #p5-banner {
     position: relative;
-    flex: 1;
+    width: auto; /* width set by JS to match canvas */
     height: auto;
-    z-index: 6;
+    z-index: 7;
   }
   canvas {
-    width:100% !important;
-    height:auto !important;
+    display:block;
     background:transparent !important;
     pointer-events:none;
   }
 
   /* --- CARD STACK --- */
   .card-stack {
+    position: relative;
     flex:0 0 26%;
     max-width:320px;
     aspect-ratio:3/4;
@@ -123,20 +120,9 @@
   @media (max-width:900px){ .card-stack{ width:34%; } }
   @media (max-width:480px){
     .folder-front { flex-direction:column; align-items:center; }
-    .name-banner { order:-1; width:100%; margin-bottom:4%; }
+    .name-banner { position:static; margin: 4% auto 0; } /* mobile: let it flow above stack */
     .card-stack { width:80%; margin-top:4%; }
   }
-
-  /* --- TABS --- */
-  .tabs { position:absolute; top:6%; left:0; width:100%; display:flex; gap:1%; padding-left:2%; align-items:flex-end; z-index:5; }
-  .tab { flex:0 0 18%; height:8vh; display:flex; align-items:center; justify-content:center;
-         border:2px solid rgba(0,0,0,0.18); font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
-         cursor:pointer; transition:background 0.25s ease, transform 0.15s ease; border-radius:0 !important; }
-  .tab button{ all:unset; width:100%; height:100%; text-align:center; cursor:pointer; border-radius:0 !important; }
-  .tab.manila{ background:#f7e9b8; color:#3a2f09; }
-  .tab.green{ background:#cfeec7; color:#1f4d2b; }
-  .tab.pink{ background:#f7cfcf; color:#5a3131; }
-  .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
   /* --- PORTRAIT LOCK FALLBACK --- */
   @media screen and (max-width:900px) and (orientation:landscape){
@@ -146,7 +132,7 @@
       background:linear-gradient(to bottom,#bfe5ff 0%,#eaf7ff 80%);
       color:#1e1e1e; font-family:'Inter',sans-serif; font-weight:600;
       letter-spacing:0.03em; display:flex; align-items:center; justify-content:center;
-      text-align:center; font-size:1.15rem; text-shadow:0 1px 3px rgba(255,255,255,0.6);
+      text-align:center; font-size:1.15rem; text-shadow: 0 1px 3px rgba(255,255,255,0.6);
       z-index:9999;
     }
   }
@@ -166,19 +152,16 @@
   </div>
   <div class="paper" aria-hidden="true"></div>
 
-  <div class="folder-front">
-    <!-- Red banner frame -->
-    <div class="name-banner">
-      <div id="p5-banner"></div>
-    </div>
+  <div class="folder-front" aria-hidden="true"></div> <!-- just the background -->
+  <!-- We render the banner absolutely on top of folder-front -->
+  <div class="name-banner"><div id="p5-banner"></div></div>
 
-    <!-- Card stack -->
-    <div class="card-stack">
-      <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
-      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
-      <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
-      <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
-    </div>
+  <!-- Card stack stays where it is in the visual layer -->
+  <div class="card-stack">
+    <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
+    <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
+    <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
+    <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
   </div>
 
 <script>
@@ -215,127 +198,213 @@ function animationLoop(timestamp) {
 requestAnimationFrame(animationLoop);
 
 /* --- P5.js SKETCH --- */
-new p5(p => {
-  let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.18;
+(function() {
+  const nameBanner = document.querySelector('.name-banner');
+  const p5Parent = document.getElementById('p5-banner');
 
-  p.setup = function() {
-    const parent = document.getElementById('p5-banner');
-    const w = parent.offsetWidth, h = w * aspectRatio;
-    const c = p.createCanvas(w, h, p.WEBGL);
-    c.parent('p5-banner');
-    p.setAttributes('alpha', true);
-    p.noStroke();
+  // These control the *internal* margins so the box hugs the content symmetrically.
+  // Left margin equals the sphere's left clearance; right margin is matched to it.
+  const aspectRatio = 0.18; // banner height relative to width *before* width auto-fit
+  let p5Instance;
 
-    gridTex = p.createGraphics(512, 256);
-    gridTex.clear();
-    drawGridTexture(gridTex);
+  new p5(p => {
+    let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
+    let lastComputedWidth = null;
 
-    textLayer = p.createGraphics(w, h);
-    textLayer.pixelDensity(1);
-    textLayer.clear();
-    updateTextLayer(w, h);
-  };
+    p.setup = function() {
+      // Start with a provisional width; we'll auto-fit to content immediately after.
+      const provisionalW = Math.max(320, window.innerWidth * 0.45);
+      const h = provisionalW * aspectRatio;
+      const c = p.createCanvas(provisionalW, h, p.WEBGL);
+      c.parent(p5Parent);
+      p.setAttributes('alpha', true);
+      p.noStroke();
 
-  p.draw = function() {
-    p.clear();
-    p.push();
-    p.translate(-p.width / 2, 0, 0);
+      gridTex = p.createGraphics(512, 256);
+      gridTex.clear();
+      drawGridTexture(gridTex);
 
-    const h = p.height;
-    const w = p.width;
-    const radius = h * 0.21;
-    const sphereCX = radius + h * 0.18;
+      textLayer = p.createGraphics(provisionalW, h);
+      textLayer.pixelDensity(1);
+      textLayer.clear();
 
-    autoRotate += 0.003;
-    p.push();
-    p.translate(sphereCX, 0, 0);
-    const rotY = p.map(p.mouseX, 0, w, -p.PI, p.PI);
-    const rotX = p.map(p.mouseY, 0, h, -p.PI / 2, p.PI / 2);
-    p.rotateY(rotY + autoRotate);
-    p.rotateX(rotX * 0.5);
+      // initial draw + auto-fit
+      updateTextLayer(p.width, p.height, true);
+      autoFitToContent();
+      positionBanner();
+    };
 
-    p.fill(255, 255, 255, 150);
-    p.texture(gridTex);
-    p.sphere(radius, sphereDetail, sphereDetail);
-    p.pop();
+    p.draw = function() {
+      p.clear();
+      p.push();
+      p.translate(-p.width / 2, 0, 0);
 
-    updateTextLayer(p.width, p.height);
-    p.image(textLayer, 0, -p.height / 2);
-    p.pop();
-  };
+      const h = p.height;
+      const w = p.width;
+      const leftPad = h * 0.18;   // symmetric internal margin
+      const radius  = h * 0.21;   // ensure sphere never crosses border
+      const sphereCX = leftPad + radius;
 
-  function updateTextLayer(w, h) {
-    if (textLayer.width !== w || textLayer.height !== h) {
-      textLayer.resizeCanvas(w, h);
-    }
-    textLayer.clear();
+      autoRotate += 0.003;
+      p.push();
+      p.translate(sphereCX, 0, 0);
+      const rotY = p.map(p.mouseX, 0, w, -p.PI, p.PI);
+      const rotX = p.map(p.mouseY, 0, h, -p.PI / 2, p.PI / 2);
+      p.rotateY(rotY + autoRotate);
+      p.rotateX(rotX * 0.5);
 
-    const pastelColors = [
-      [255, 182, 193],
-      [173, 216, 230],
-      [152, 251, 152]
-    ];
+      p.fill(255, 255, 255, 150);
+      p.texture(gridTex);
+      p.sphere(radius, sphereDetail, sphereDetail);
+      p.pop();
 
-    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
-    textLayer.textFont('Google Sans Mono, monospace');
-    const fontSize = h * 0.36;
-    textLayer.textSize(fontSize);
+      updateTextLayer(w, h, false);
+      p.image(textLayer, 0, -h / 2);
+      p.pop();
+    };
 
-    const radius = h * 0.21;
-    const sphereCX = radius + h * 0.18;
-    const oSpacing = radius * 0.68;
-    const textStartX = sphereCX + oSpacing + w * 0.015;
-    const baseText = "wen Denver Emerson";
+    function updateTextLayer(w, h, firstPass) {
+      if (textLayer.width !== w || textLayer.height !== h) {
+        textLayer.resizeCanvas(w, h);
+      }
+      textLayer.clear();
 
-    textLayer.noStroke();
-    textLayer.fill(0, 0, 0, 60);
-    textLayer.text(baseText, textStartX + 2, h / 2 + 2);
+      const pastelColors = [
+        [255, 182, 193],
+        [173, 216, 230],
+        [152, 251, 152]
+      ];
 
-    pastelColors.forEach((rgb, idx) => {
-      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
-      textLayer.strokeWeight(3);
+      textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
+      textLayer.textFont('Google Sans Mono, monospace');
+      const fontSize = h * 0.36; // your approved size
+      textLayer.textSize(fontSize);
+
+      const leftPad = h * 0.18;  // symmetric internal margin
+      const radius  = h * 0.21;
+      const sphereCX = leftPad + radius;
+
+      const oSpacing = radius * 0.68;   // distance from globe edge to text
+      const extraPad = 0;               // no extra bias; we want symmetry
+      const textStartX = sphereCX + radius + oSpacing + extraPad;
+      const baseText = "wen Denver Emerson";
+
+      // drop shadow
+      textLayer.noStroke();
+      textLayer.fill(0, 0, 0, 60);
+      textLayer.text(baseText, textStartX + 2, h / 2 + 2);
+
+      // iridescent outlines
+      pastelColors.forEach((rgb, idx) => {
+        textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
+        textLayer.strokeWeight(3);
+        textLayer.noFill();
+        textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
+      });
+
+      // thin white outline
+      textLayer.stroke(255);
+      textLayer.strokeWeight(1);
       textLayer.noFill();
-      textLayer.text(baseText, textStartX + idx * 0.6, h / 2 + idx * 0.4);
+      textLayer.text(baseText, textStartX, h / 2);
+
+      // white fill
+      textLayer.noStroke();
+      textLayer.fill(255);
+      textLayer.text(baseText, textStartX, h / 2);
+
+      // First pass or when width changed: compute needed width so right edge hugs text.
+      if (firstPass) {
+        const rightPad = leftPad; // symmetric margin
+        const textW = textLayer.textWidth(baseText);
+        const neededW = Math.ceil(textStartX + textW + rightPad);
+        lastComputedWidth = neededW;
+      }
+    }
+
+    function drawGridTexture(pg) {
+      pg.clear();
+      pg.strokeWeight(2);
+      const colors = [
+        p.color(255,182,193),
+        p.color(173,216,230),
+        p.color(152,251,152)
+      ];
+      for (let i = 0; i <= pg.width; i += pg.width / 12) {
+        const c = colors[Math.floor((i / (pg.width / 12)) % 3)];
+        pg.stroke(c);
+        pg.line(i, 0, i, pg.height);
+      }
+      for (let j = 0; j <= pg.height; j += pg.height / 6) {
+        const c = colors[Math.floor((j / (pg.height / 6)) % 3)];
+        pg.stroke(c);
+        pg.line(0, j, pg.width, j);
+      }
+    }
+
+    function autoFitToContent() {
+      if (!lastComputedWidth) return;
+      const newW = lastComputedWidth;
+      const newH = Math.round(newW * aspectRatio);
+      p.resizeCanvas(newW, newH);
+      textLayer.resizeCanvas(newW, newH);
+      // reflect to DOM so the red box hugs the canvas
+      p5Parent.style.width = newW + 'px';
+      p5Parent.style.height = newH + 'px';
+      nameBanner.style.width = (newW) + 'px';
+      nameBanner.style.height = (newH) + 'px';
+      // refresh text at new size
+      updateTextLayer(newW, newH, false);
+    }
+
+    // Position banner: X align with Tab One’s left edge; Y center between paper bottom and card stack top.
+    function positionBanner() {
+      const tabs = document.querySelector('.tabs');
+      const tabOne = document.querySelector('.tab.manila');
+      const paper = document.querySelector('.paper');
+      const folderFront = document.querySelector('.folder-front');
+      const cardStack = document.querySelector('.card-stack');
+
+      if (!tabs || !tabOne || !paper || !folderFront || !cardStack) return;
+
+      const tabLeft = tabOne.getBoundingClientRect().left;
+      const paperBottom = paper.getBoundingClientRect().bottom;
+      const cardTop = cardStack.getBoundingClientRect().top;
+
+      const ffRect = folderFront.getBoundingClientRect();
+      const nbRect = nameBanner.getBoundingClientRect();
+
+      // X: tab one’s left edge → relative to folder-front
+      const leftInside = tabLeft - ffRect.left;
+
+      // Y: top edge centered between paper bottom and card stack top
+      const midY = (paperBottom + cardTop) / 2;
+      const topInside = Math.round(midY - ffRect.top - (nbRect.height / 2));
+
+      nameBanner.style.left = Math.max(0, leftInside) + 'px';
+      nameBanner.style.top  = topInside + 'px';
+    }
+
+    p.windowResized = function() {
+      // Recompute content width from current height baseline
+      lastComputedWidth = null;
+      updateTextLayer(p.width, p.height, true);
+      autoFitToContent();
+      positionBanner();
+    };
+
+    // Reposition after fonts load (in case)
+    document.fonts && document.fonts.ready && document.fonts.ready.then(() => {
+      lastComputedWidth = null;
+      updateTextLayer(p.width, p.height, true);
+      autoFitToContent();
+      positionBanner();
     });
 
-    textLayer.stroke(255);
-    textLayer.strokeWeight(1);
-    textLayer.noFill();
-    textLayer.text(baseText, textStartX, h / 2);
-
-    textLayer.noStroke();
-    textLayer.fill(255);
-    textLayer.text(baseText, textStartX, h / 2);
-  }
-
-  function drawGridTexture(pg) {
-    pg.clear();
-    pg.strokeWeight(2);
-    const colors = [
-      p.color(255,182,193),
-      p.color(173,216,230),
-      p.color(152,251,152)
-    ];
-    for (let i = 0; i <= pg.width; i += pg.width / 12) {
-      const c = colors[Math.floor((i / (pg.width / 12)) % 3)];
-      pg.stroke(c);
-      pg.line(i, 0, i, pg.height);
-    }
-    for (let j = 0; j <= pg.height; j += pg.height / 6) {
-      const c = colors[Math.floor((j / (pg.height / 6)) % 3)];
-      pg.stroke(c);
-      pg.line(0, j, pg.width, j);
-    }
-  }
-
-  p.windowResized = function() {
-    const parent = document.getElementById('p5-banner');
-    const w = parent.offsetWidth, h = w * aspectRatio;
-    p.resizeCanvas(w, h);
-    updateTextLayer(w, h);
-  };
-});
+    // expose for debugging if needed
+    p5Instance = p;
+  });
+})();
 </script>
 </body>
 </html>
