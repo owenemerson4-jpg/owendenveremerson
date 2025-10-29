@@ -2,16 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Folder — Scandinavian Flat Version</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Folder — Scandinavian Flat Refined</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
-    height: 100%;
-    width: 100%;
+    height: 100dvh;
+    width: 100vw;
     font-family: 'Inter', system-ui, Arial, sans-serif;
     overflow: hidden;
     background: linear-gradient(to bottom, #bfe5ff 0%, #eaf7ff 80%);
+  }
+
+  /* Accent grid lines */
+  .divider {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(0,0,0,0.1);
+    pointer-events: none;
+    z-index: 10;
   }
 
   /* --- CLOUDS --- */
@@ -28,21 +39,14 @@
     height: 100%;
     background: inherit;
   }
-
-  /* Modular, rectangular clouds */
   .cloud.small {
     top: 8%;
     left: -20%;
     width: 120px;
     animation-duration: 38s;
   }
-  .cloud.small::before {
-    left: 140px; width: 80px;
-  }
-  .cloud.small::after {
-    left: 240px; width: 60px;
-  }
-
+  .cloud.small::before { left: 140px; width: 80px; }
+  .cloud.small::after { left: 240px; width: 60px; }
   .cloud.large {
     top: 18%;
     left: -30%;
@@ -50,13 +54,8 @@
     animation-duration: 52s;
     animation-delay: -6s;
   }
-  .cloud.large::before {
-    left: 200px; width: 100px;
-  }
-  .cloud.large::after {
-    left: 320px; width: 80px;
-  }
-
+  .cloud.large::before { left: 200px; width: 100px; }
+  .cloud.large::after { left: 320px; width: 80px; }
   @keyframes float {
     from { transform: translateX(0); }
     to { transform: translateX(130vw); }
@@ -71,7 +70,7 @@
     height: 86%;
     background: linear-gradient(to bottom, #e9d79a 0%, #e2c97f 100%);
     z-index: 2;
-    border-top: 2px solid rgba(0,0,0,0.12);
+    border-top: 1px solid rgba(0,0,0,0.15);
   }
 
   .paper {
@@ -82,8 +81,8 @@
     height: 5%;
     background: #ffffff;
     z-index: 3;
-    border-top: 1px solid rgba(0,0,0,0.1);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-top: 1px solid rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
   }
 
   .folder-front {
@@ -94,8 +93,7 @@
     top: 20%;
     background: linear-gradient(to bottom, #f5e0a1 0%, #f2d58b 100%);
     z-index: 4;
-    border-top: 2px solid rgba(0,0,0,0.2);
-    box-shadow: none;
+    border-top: 1px solid rgba(0,0,0,0.2);
   }
 
   /* --- TABS --- */
@@ -112,25 +110,41 @@
   }
 
   .tab {
-    flex: 0 0 18%;
-    height: 8vh;
+    flex: 0 0 20%;
+    height: 9vh;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid rgba(0,0,0,0.18);
+    background: #f0f0f0;
+    color: #2f2f2f;
+    text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 0.05em;
-    text-transform: uppercase;
     cursor: pointer;
     transition: background 0.25s ease, transform 0.15s ease;
   }
 
   .tab.manila { background: #f7e9b8; color: #3a2f09; }
-  .tab.green { background: #cfeec7; color: #1f4d2b; }
-  .tab.pink  { background: #f7cfcf; color: #5a3131; }
+  .tab.green  { background: #cfeec7; color: #1f4d2b; }
+  .tab.pink   { background: #f7cfcf; color: #5a3131; }
 
   .tab:hover { transform: translateY(-2px); }
   .tab:active { transform: translateY(0); }
+
+  /* Remove rounding globally */
+  .tab, .folder-front, .folder-back, .paper, .card, .card-stack, button {
+    border-radius: 0 !important;
+  }
+
+  .tab button {
+    all: unset;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
 
   /* --- CARD STACK --- */
   .card-stack {
@@ -146,6 +160,7 @@
     justify-content: flex-start;
     z-index: 6;
     perspective: 1000px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
   }
 
   .card {
@@ -159,12 +174,17 @@
     justify-content: center;
     transition: transform 0.6s ease, opacity 0.6s ease;
     will-change: transform, opacity;
+    overflow: hidden;
   }
 
-  .card img, .card video {
+  /* Disable interaction inside the stack */
+  .card img,
+  .card video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
+    user-select: none;
   }
 
   .card-stack .card:nth-child(1) { transform: translateY(0px) scale(1); z-index:3; }
@@ -188,6 +208,10 @@
   <div class="cloud small" aria-hidden="true"></div>
   <div class="cloud large" aria-hidden="true"></div>
 
+  <!-- Dividers -->
+  <div class="divider" style="top: 15%;"></div>
+  <div class="divider" style="top: 20%;"></div>
+
   <!-- Folder Structure -->
   <div class="folder-back" aria-hidden="true"></div>
   <div class="tabs">
@@ -199,7 +223,7 @@
   <div class="folder-front" aria-hidden="true">
     <div class="card-stack">
       <div class="card"><img src="my_homepage/img1.png" alt="Card 1"></div>
-      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop></video></div>
+      <div class="card"><video src="my_homepage/HeartSpinWebsite.mp4" muted autoplay loop playsinline></video></div>
       <div class="card"><img src="my_homepage/img2.png" alt="Card 2"></div>
       <div class="card"><img src="my_homepage/img3.png" alt="Card 3"></div>
     </div>
@@ -249,6 +273,17 @@ function animationLoop(timestamp) {
   requestAnimationFrame(animationLoop);
 }
 requestAnimationFrame(animationLoop);
+
+/* --- MOBILE SCALING FIX --- */
+function resizeViewport() {
+  document.documentElement.style.height = window.innerHeight + 'px';
+  document.documentElement.style.width = window.innerWidth + 'px';
+}
+window.addEventListener('resize', resizeViewport);
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeViewport, 300);
+});
+resizeViewport();
 </script>
 </body>
 </html>
