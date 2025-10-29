@@ -6,7 +6,8 @@
 <title>Folder — Scandinavian Flat Version (Final Portrait Lock)</title>
 
 <!-- Orbitron font for p5 sketch -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Mono:wght@500&display=swap" rel="stylesheet">
+
 
 <!-- p5.js -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
@@ -187,7 +188,7 @@ requestAnimationFrame(animationLoop);
 /* --- P5.js SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.20; // slightly shorter banner height for balance
+  const aspectRatio = 0.20;
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -212,7 +213,7 @@ new p5(p => {
     p.push();
     p.translate(-p.width / 2, 0, 0);
 
-    const radius = p.height * 0.30; // smaller sphere
+    const radius = p.height * 0.26; // smaller sphere
     const sphereCX = radius + p.height * 0.10;
 
     autoRotate += 0.003;
@@ -246,14 +247,14 @@ new p5(p => {
     ];
 
     textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
-    textLayer.textFont('Orbitron, monospace');
-    const fontSize = h * 0.55; // smaller text
+    textLayer.textFont('Google Sans Mono, monospace');
+    const fontSize = h * 0.42; // smaller text size
     textLayer.textSize(fontSize);
 
-    const radius = h * 0.30;
+    const radius = h * 0.26;
     const sphereCX = radius + h * 0.10;
     const oSpacing = radius * 0.85;
-    const textStartX = sphereCX + oSpacing + w * 0.02; // padding from sphere
+    const textStartX = sphereCX + oSpacing + w * 0.06; // add right margin
     const baseText = "wen Denver Emerson";
 
     textLayer.noStroke();
@@ -305,5 +306,6 @@ new p5(p => {
   };
 });
 </script>
+
 </body>
 </html>
