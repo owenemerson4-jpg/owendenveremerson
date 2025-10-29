@@ -59,18 +59,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f7cfcf; /* flat red, same as Tab Three */
+    background: #f2b0b0; /* darker red tone */
     border: 2px solid rgba(0,0,0,0.18);
     border-radius: 0;
-    padding: 0.6% 0.8%; /* slimmer, tighter fit */
-    margin-right: 4%;
+    padding: 0.5% 0.5%; /* smaller padding: tighter top/bottom, right/left */
+    margin-right: 2%;
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     z-index: 5;
+    position: relative;
+    top: -4%; /* raise upward on desktop */
+    left: -3%; /* shift left to align with Tab One */
   }
   @media (max-width: 480px) {
     .name-banner {
       width: 94%;
       margin: 4% auto;
+      top: 0;
+      left: 0;
     }
   }
 
@@ -212,7 +217,7 @@ requestAnimationFrame(animationLoop);
 /* --- P5.js SKETCH --- */
 new p5(p => {
   let gridTex, textLayer, sphereDetail = 50, autoRotate = 0;
-  const aspectRatio = 0.18; // slimmer banner, fits tighter
+  const aspectRatio = 0.18;
 
   p.setup = function() {
     const parent = document.getElementById('p5-banner');
@@ -239,8 +244,8 @@ new p5(p => {
 
     const h = p.height;
     const w = p.width;
-    const radius = h * 0.21; // reduced radius to stay inside red box
-    const sphereCX = radius + h * 0.18; // moved slightly right
+    const radius = h * 0.21;
+    const sphereCX = radius + h * 0.18;
 
     autoRotate += 0.003;
     p.push();
