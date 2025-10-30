@@ -220,7 +220,11 @@
   bottom: calc(100% - var(--folder-back-top, 14vh)); 
   height: 15vh;
   z-index: 9;
-  pointer-events: none;
+  pointer-events: auto; /* <-- was none */
+  cursor: pointer;
+}
+.house-image:active {
+  transform: scale(0.96);
 }
 
 /* Ensures the house aligns to the top of the manila folder area */
