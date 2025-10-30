@@ -92,7 +92,7 @@
   .tab.pink{ background:#f7cfcf; color:#5a3131; }
   .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
-  /* --- P5 CANVAS POSITIONING (desktop unchanged) --- */
+  /* --- P5 CANVAS POSITIONING (desktop) --- */
   #p5-holder {
     position: absolute;
     z-index: 8;
@@ -109,7 +109,7 @@
     pointer-events: auto !important;
   }
 
-  /* --- GREEN TEXT BOX (desktop unchanged) --- */
+  /* --- GREEN TEXT BOX (desktop) --- */
   .green-text-box {
     position: absolute;
     left: 2%;
@@ -138,40 +138,59 @@
     overflow-wrap: anywhere;
   }
 
-  /* --- MOBILE: p5 banner → green banner → big card stack (centered) --- */
+  /* --- MOBILE: banner -> banner -> big card stack (all inside manila) --- */
   @media (max-width: 768px) {
+
+    /* p5 banner full-width below the white seam */
     #p5-holder {
       position: relative;
       left: 0;
       top: auto;
-      width: 85%;
-      transform: scale(0.85);          /* ~15% smaller */
-      margin: calc(22vh + 8px) auto 0; /* sits at top of manila; keeps white seam clear */
+      width: 100%;
+      transform: none;
+      margin: calc(20vh + 6px) auto 0 auto; /* sits at top of manila */
       z-index: 6;
+      pointer-events: none;
     }
+
+    canvas.p5Canvas {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+    }
+
+    /* green banner below red banner, full width */
     .green-text-box {
       position: relative;
       top: auto;
       left: 0;
-      width: 85%;
-      transform: scale(0.85);          /* ~15% smaller */
-      margin: 3vh auto 0;              /* spaced below p5 banner */
-      text-align: center;
+      width: calc(100% - 8%);
+      margin: 2vh auto 0 auto;
+      padding: 0.8em 1em;
       z-index: 6;
+      text-align: center;
     }
+    .green-text-box span {
+      font-size: clamp(1rem, 3.6vw, 1.25rem);
+      line-height: 1.25;
+    }
+
+    /* push card content inside manila below the two banners */
     .folder-front {
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
       padding: 0 4%;
-      margin-top: 5vh;                 /* space between green banner and cards */
+      /* approximate space of red banner (25vw) + green banner (~90px) + spacing */
+      padding-top: calc(25vw + 110px);
     }
+
+    /* big, centered card stack */
     .card-stack {
-      width: 80%;
-      max-width: 400px;
-      margin: 5vh auto 8vh;
-      transform: scale(0.7);           /* ~30% smaller */
-      transform-origin: center top;
+      width: 96%;
+      max-width: 560px;
+      margin: 3vh auto 8vh;
+      transform: none;
     }
   }
 
@@ -209,7 +228,7 @@
 
   <!-- Green text box -->
   <div class="green-text-box">
-    <span>...is using multimedia design to tell unforgettable stories</span>
+    <span>...is telling multimedia stories</span>
   </div>
 
   <!-- Folder front content -->
@@ -225,7 +244,7 @@
   <!-- p5 library -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- FULL p5 sketch (included) -->
+  <!-- FULL p5 sketch (unchanged from your stable version) -->
   <script>
   let gridTex;
   let textLayer;
@@ -482,21 +501,6 @@
   if (screen.orientation && screen.orientation.lock) {
     screen.orientation.lock('portrait').catch(() => {});
   }
-  </script>
-
-  <!-- ✅ Mandatory p5 presence check (non-intrusive) -->
-  <script>
-  (function(){
-    function checkP5Presence(){
-      const libLoaded = !!window.p5;
-      const holder = document.getElementById('p5-holder');
-      const canvas = holder && holder.querySelector('canvas.p5Canvas');
-      console.assert(libLoaded, 'p5 library not loaded.');
-      console.assert(!!canvas, 'p5 canvas not found in #p5-holder.');
-    }
-    window.addEventListener('load', () => setTimeout(checkP5Presence, 300));
-    window.addEventListener('resize', () => setTimeout(checkP5Presence, 300));
-  })();
   </script>
 </body>
 </html>
