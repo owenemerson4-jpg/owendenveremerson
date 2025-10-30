@@ -682,79 +682,10 @@ function getTheme() {
   </script>
  
 
-<script>
-function toggleHouseImage() {
-  const house = document.getElementById("houseButton");
-  const body = document.body;
-  const audio = document.getElementById("cricketsAudio");
-
-  // image sources
-  const lightNormal = "my_assets/Drawing (1).png";
-  const lightClick = "my_assets/Drawing (2).png";
-  const darkNormal = "my_assets/Drawing (1)BW.png";
-  const darkClick = "my_assets/Drawing (2)BW.png";
-
-  // determine if currently dark
-  const isDark = body.classList.contains("dark-mode");
-
-  // show click animation depending on mode
-  house.src = isDark ? darkClick : lightClick;
-
-  // after 1s, toggle mode and show correct resting image
-  setTimeout(() => {
-    const nowDark = body.classList.toggle("dark-mode");
-
-    // manage image after toggle
-    if (nowDark) {
-      house.src = darkNormal;
-    } else {
-      house.src = lightNormal;
-    }
-
-    // manage audio
-    if (audio) {
-      try {
-        if (nowDark) {
-          audio.currentTime = 0;
-          audio.play();
-        } else {
-          audio.pause();
-          audio.currentTime = 0;
-        }
-      } catch (e) {}
-    }
-  }, 1000);
-}
-</script>
 
 
 
 
-<script>
-function toggleHouseImage() {
-  const house = document.getElementById("houseButton");
-  const body = document.body;
-  const audio = document.getElementById("cricketsAudio");
-
-  const originalSrc = "my_assets/Drawing (1).png";
-  const altSrc = "my_assets/Drawing (2).png";
-
-  // Swap image temporarily
-  house.src = altSrc;
-  setTimeout(() => { house.src = originalSrc; }, 1000);
-
-  // Toggle dark mode class
-  body.classList.toggle("dark-mode");
-
-  // Toggle audio playback
-  if (body.classList.contains("dark-mode")) {
-    audio.play();
-  } else {
-    audio.pause();
-    audio.currentTime = 0;
-  }
-}
-</script>
 
 
 <script id="setCricketsVolumeOnLoad">
@@ -762,6 +693,55 @@ document.addEventListener('DOMContentLoaded', () => {
   const a = document.getElementById('cricketsAudio');
   if (a) a.volume = 0.35; // softer default volume
 });
+</script>
+
+
+<script>
+(function(){
+  const SPRITES = {
+    light: { normal: "my_assets/Drawing (1).png", click: "my_assets/Drawing (2).png" },
+    dark:  { normal: "my_assets/Drawing (1)BW.png", click: "my_assets/Drawing (2)BW.png" }
+  };
+
+  function setHouseSpriteForMode() {
+    const house = document.getElementById("houseButton");
+    if (!house) return;
+    const isDark = document.body.classList.contains("dark-mode");
+    house.src = isDark ? SPRITES.dark.normal : SPRITES.light.normal;
+  }
+
+  window.toggleHouseImage = function toggleHouseImage() {
+    const house = document.getElementById("houseButton");
+    const audio = document.getElementById("cricketsAudio");
+    const isDark = document.body.classList.contains("dark-mode");
+
+    // Show press animation sprite based on current mode
+    house.src = isDark ? SPRITES.dark.click : SPRITES.light.click;
+
+    // After 1s, toggle mode, then set resting sprite based on NEW mode
+    setTimeout(() => {
+      const nowDark = document.body.classList.toggle("dark-mode");
+
+      // handle audio playback
+      if (audio) {
+        try {
+          if (nowDark) {
+            audio.currentTime = 0;
+            audio.play();
+          } else {
+            audio.pause();
+            audio.currentTime = 0;
+          }
+        } catch(e){}
+      }
+
+      // set sprite for the resulting mode
+      house.src = nowDark ? SPRITES.dark.normal : SPRITES.light.normal;
+    }, 1000);
+  };
+
+  document.addEventListener("DOMContentLoaded", setHouseSpriteForMode);
+})();
 </script>
 
 </body>
