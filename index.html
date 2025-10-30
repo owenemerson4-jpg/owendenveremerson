@@ -249,7 +249,14 @@
   <div class="folder-back" aria-hidden="true"></div>
 
   <!-- House image sitting on top of the manila folder -->
-  <img src="my_assets/Drawing (1).png" alt="House illustration" class="house-image">
+  <img
+  src="my_assets/Drawing (1).png"
+  alt="House illustration"
+  class="house-image"
+  id="houseButton"
+  onclick="toggleHouseImage()"
+/>
+
 <div class="tabs">
   <a href="index.html" class="tab manila">About</a>
   <a href="work.html" class="tab green">Work</a>
@@ -576,5 +583,21 @@ function drawSphereOutline(r) {
     screen.orientation.lock('portrait').catch(() => {});
   }
   </script>
+ <script>
+  function toggleHouseImage() {
+    const house = document.getElementById("houseButton");
+    const originalSrc = "my_assets/Drawing (1).png";
+    const altSrc = "my_assets/Drawing (2).png";
+
+    // Swap to the alternate image
+    house.src = altSrc;
+
+    // Wait one second, then swap back
+    setTimeout(() => {
+      house.src = originalSrc;
+    }, 1000);
+  }
+</script>
+
 </body>
 </html>
