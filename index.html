@@ -678,36 +678,47 @@ function updateTextLayer(r = 0, sCX = 0) {
   let intervalTime = 4000;
   let lastTime = 0;
 
-  function cycleCards() {
-    const cards = stack.querySelectorAll('.card');
-    if (cards.length <= 1) return;
-    const top = cards[0];
-    const second = cards[1];
+function cycleCards() {
+  const cards = stack.querySelectorAll('.card');
+  if (cards.length <= 1) return;
+  const top = cards[0];
+  const second = cards[1];
 
-    top.style.transform = 'translateX(110%) rotate(0deg)';
-    top.style.opacity = '0';
+  // animate top card offscreen
+  top.style.transform = 'translateX(110%) rotate(0deg)';
+  top.style.opacity = '0';
 
-    second.style.transform = 'translateY(0) scale(1)';
-    second.style.zIndex = 3;
+  // bring next card to front
+  second.style.transform = 'translateY(0) scale(1)';
+  second.style.zIndex = cards.length;
 
-    for (let i = 2; i < cards.length; i++) {
-      const y = 8 * (i - 1);
-      const scale = 1 - 0.03 * (i - 1);
-      cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-      cards[i].style.zIndex = 3 - i;
-    }
-
-    setTimeout(() => {
-      top.style.transition = 'none';
-      const n = cards.length;
-      top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
-      top.style.opacity = '1';
-      top.style.zIndex = 1;
-      stack.appendChild(top);
-      void top.offsetWidth;
-      top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
-    }, 600);
+  // re-stack the rest visually
+  for (let i = 2; i < cards.length; i++) {
+    const y = 8 * (i - 1);
+    const scale = 1 - 0.03 * (i - 1);
+    cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+    cards[i].style.zIndex = cards.length - i;
   }
+
+  setTimeout(() => {
+    // Move top card to end and hide it behind others
+    top.style.transition = 'none';
+    const y = 8 * (cards.length - 1);
+    const scale = 1 - 0.03 * (cards.length - 1);
+    top.style.transform = `translateY(${y}px) scale(${scale})`;
+    top.style.opacity = '0';             // keep hidden initially
+    top.style.zIndex = 1;                // send to bottom
+    stack.appendChild(top);
+
+    // Force reflow and restore transition for future cycles
+    void top.offsetWidth;
+    top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+
+    // Fade it back in after re-insert (looks seamless)
+    requestAnimationFrame(() => { top.style.opacity = '1'; });
+  }, 600);
+}
+
 
   function animationLoop(timestamp) {
     if (timestamp - lastTime >= intervalTime) {
