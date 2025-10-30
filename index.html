@@ -241,6 +241,44 @@
 }
 
 
+
+/* --- DARK MODE --- */
+body.dark-mode {
+  background: linear-gradient(to bottom, #0d0d0d 0%, #1a1a1a 80%);
+  color: #f5f5f5;
+}
+
+/* Clouds / sky */
+body.dark-mode .cloud { background: rgba(255,255,255,0.15); }
+
+/* Folder layers */
+body.dark-mode .folder-back {
+  background: linear-gradient(to bottom,#222,#111);
+  border-top: 2px solid rgba(255,255,255,0.1);
+}
+body.dark-mode .folder-front {
+  background: linear-gradient(to bottom,#333,#1f1f1f);
+  border-top: 2px solid rgba(255,255,255,0.15);
+}
+
+/* Text + banners */
+body.dark-mode .green-text-box {
+  background: #222;
+  border-color: #444;
+}
+body.dark-mode .green-text-box span { color:#fafafa; }
+
+/* Tabs */
+body.dark-mode .tab.manila { background:#2a2a2a; color:#eee; }
+body.dark-mode .tab.green  { background:#1c1c1c; color:#ddd; }
+body.dark-mode .tab.pink   { background:#202020; color:#ccc; }
+
+/* Cards */
+body.dark-mode .card { background:#181818; border-color:#444; }
+
+/* Paper */
+body.dark-mode .paper { background:#444; border-color:#666; }
+
 </style>
 </head>
 
@@ -290,6 +328,8 @@
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
   <!-- FULL p5 sketch (unchanged from your stable version) -->
+  
+  <!-- FULL p5 sketch (theme-aware) -->
   <script>
   let gridTex;
   let textLayer;
@@ -302,6 +342,33 @@
   let radius = 0;
   let sphereCX = 0;
 
+  // Theme helpers
+  let lastDark = false;
+  function isDarkMode() {
+    return document.body.classList.contains('dark-mode');
+  }
+  function getTheme() {
+    if (isDarkMode()) {
+      return {
+        p5Bg: 60,                          // banner background
+        frameStroke: '#999',               // frame outline
+        textOutline: [235,235,235],
+        textFill: 235,
+        glow: [[200,200,200],[140,140,140],[180,180,180]],
+        sphereOutline: '#b3b3b3'
+      };
+    } else {
+      return {
+        p5Bg: '#f7cfcf',
+        frameStroke: '#97717E',
+        textOutline: [151,113,126],
+        textFill: 255,
+        glow: [[173,216,230],[152,251,152],[255,182,193]],
+        sphereOutline: '#97717E'
+      };
+    }
+  }
+
   function setup() {
     const aspectRatio = 0.25;
     const cnv = createCanvas(windowWidth, windowWidth * aspectRatio, WEBGL);
@@ -312,7 +379,7 @@
     // Grid texture for sphere
     gridTex = createGraphics(512, 256);
     gridTex.clear();
-    drawGridTexture(gridTex);
+    drawGridTexture(gridTex, isDarkMode());
 
     // Text layer
     textLayer = createGraphics(width, height);
@@ -326,11 +393,16 @@
   }
 
   function draw() {
-    background('#f7cfcf');
+    const theme = getTheme();
+    background(theme.p5Bg);
 
-    // Smoothly interpolate toward target layout values
-    radius = lerp(radius, targetRadius, 0.08);
-    sphereCX = lerp(sphereCX, targetSphereCX, 0.08);
+    // Re-render grid texture only when theme flips
+    const dark = isDarkMode();
+    if (dark !== lastDark) {
+      gridTex.clear();
+      drawGridTexture(gridTex, dark);
+      lastDark = dark;
+    }
 
     push();
     translate(-width / 2, 0, 0);
@@ -356,131 +428,92 @@
 
   // ---------------- Layout + Scaling ----------------
 
-function computeLayoutTargets() {
-  // base proportional factor
-  const baseScale = constrain(width / 900, 0.4, 1);
+  function computeLayoutTargets() {
+    const baseScale = constrain(width / 900, 0.4, 1);
+    let scaleFactor;
+    if (width < 600)      scaleFactor = 1.05;
+    else if (width < 1000) scaleFactor = 1.0;
+    else if (width < 1400) scaleFactor = 0.9;
+    else                   scaleFactor = 0.8;
 
-  // smoother scale curve:
-  // - stays generous on mobile
-  // - eases off after tablet size so sphere doesn't blow up on desktop
-  let scaleFactor;
-  if (width < 600) {
-    scaleFactor = 1.05;          // slightly larger on phones
-  } else if (width < 1000) {
-    scaleFactor = 1.0;           // neutral around tablet
-  } else if (width < 1400) {
-    scaleFactor = 0.9;           // modestly reduce for standard desktops
-  } else {
-    scaleFactor = 0.8;           // further taper on ultrawide screens
+    targetRadius = width * 0.12 * baseScale * scaleFactor;
+    const offsetFactor = map(width, 320, 1400, 0.12, 0.17, true);
+    targetSphereCX = targetRadius * (1 + offsetFactor);
   }
-
-  // compute sphere radius — based on width, with smooth falloff at large sizes
-  targetRadius = width * 0.12 * baseScale * scaleFactor;
-
-  // fine-tuned horizontal offset keeps the sphere nestled over the “O”
-  // slightly more spacing for wide layouts to avoid crowding the text
-  const offsetFactor = map(width, 320, 1400, 0.12, 0.17, true);
-  targetSphereCX = targetRadius * (1 + offsetFactor);
-}
-
-
-
 
   // ---------------- Drawing helpers ----------------
 
-function drawSphereOutline(r) {
-  // Color matches your existing reddish-brown accent
-  const outlineColor = '#97717E';
+  function drawSphereOutline(r) {
+    const outlineColor = getTheme().sphereOutline;
+    const cx = (width / 2) - (width / 2 - targetSphereCX);
+    const cy = height / 2;
+    const d = r * 2 * 1.06;
+    const scaleW = constrain(width / 900, 0.4, 1);
 
-  // Compute the live center of the sphere, matching the translation logic in draw()
-  const cx = (width / 2) - (width / 2 - targetSphereCX);
-  const cy = height / 2;
-
-  // Calculate an adaptive ellipse diameter that envelopes the sphere snugly.
-  // Slightly enlarge by ~6% to look like it wraps around the "volume" of the sphere.
-  const d = r * 2 * 1.06;
-
-  // Dynamic stroke scaling: thinner on small devices
-  const scaleW = constrain(width / 900, 0.4, 1);
-
-  push();
-  resetMatrix();
-  translate(-width / 2, -height / 2);
-  noFill();
-
-  // Layered glow / depth pass
-  for (let i = 3; i >= 1; i--) {
-    const w = (1 + i * 1.4) * scaleW;
-    const a = 12 + i * 4;
-    stroke(
-      redFromHex(outlineColor),
-      greenFromHex(outlineColor),
-      blueFromHex(outlineColor),
-      a
-    );
-    strokeWeight(w);
-    ellipse(cx, cy, d + i * 2, d + i * 2);
+    push();
+    resetMatrix();
+    translate(-width / 2, -height / 2);
+    noFill();
+    for (let i = 3; i >= 1; i--) {
+      const w = (1 + i * 1.4) * scaleW;
+      const a = 12 + i * 4;
+      stroke(
+        redFromHex(outlineColor),
+        greenFromHex(outlineColor),
+        blueFromHex(outlineColor),
+        a
+      );
+      strokeWeight(w);
+      ellipse(cx, cy, d + i * 2, d + i * 2);
+    }
+    stroke(outlineColor);
+    strokeWeight(2.4 * scaleW);
+    ellipse(cx, cy, d, d);
+    pop();
   }
 
-  // Main contour stroke
-  stroke(outlineColor);
-  strokeWeight(2.4 * scaleW);
-  ellipse(cx, cy, d, d);
-  pop();
-}
-
-
   function drawFrameOutline() {
+    const theme = getTheme();
     push();
     resetMatrix();
     translate(-width / 2, -height / 2, 0);
     noFill();
-    stroke('#97717E');
+    stroke(theme.frameStroke);
     strokeWeight(2);
     rect(0.5, 0.5, width - 3, height - 3);
     pop();
   }
 
   // ---------------- Color + Text ----------------
-
   function redFromHex(hex){ return parseInt(hex.slice(1,3), 16); }
   function greenFromHex(hex){ return parseInt(hex.slice(3,5), 16); }
   function blueFromHex(hex){ return parseInt(hex.slice(5,7), 16); }
 
   function updateTextLayer(r = 0, sCX = 0) {
+    const theme = getTheme();
     if (textLayer.width !== width || textLayer.height !== height) {
       textLayer.resizeCanvas(width, height);
     }
     textLayer.clear();
 
-    const pastelColors = [
-      '#97717E',
-      [173, 216, 230],
-      [152, 251, 152]
-    ];
-
+    const pastelColors = theme.glow;
     textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
     textLayer.textFont('IBM Plex Sans, monospace');
 
     const baseText = "wen Denver Emerson";
 
-    // Increase default font size for more fill
     const availableW = width - (sCX + r * 1.3);
-    let fontSize = height * 1.0; // larger default
+    let fontSize = height * 1.0;
     textLayer.textSize(fontSize);
     let textW = textLayer.textWidth(baseText);
-
-    // Scale down only if needed
     if (textW > availableW) {
       fontSize *= (availableW / textW) * 0.95;
       textLayer.textSize(fontSize);
     }
 
-    // Position text start to avoid overlap
-    const textStartX = sCX + r * 1.05; // cushion after sphere
+    const textStartX = sCX + r * 1.05;
     const baselineY = height / 2;
 
-    // Iridescent glow outline
     pastelColors.forEach((rgb, idx) => {
       textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
       textLayer.strokeWeight(3);
@@ -488,54 +521,62 @@ function drawSphereOutline(r) {
       textLayer.text(baseText, textStartX + idx * 0.6, baselineY + idx * 0.4);
     });
 
-    // Outline and fill
-    textLayer.stroke('#97717E');
+    textLayer.stroke(theme.textOutline[0], theme.textOutline[1], theme.textOutline[2]);
     textLayer.strokeWeight(6);
     textLayer.noFill();
     textLayer.text(baseText, textStartX, baselineY);
 
     textLayer.noStroke();
-    textLayer.fill(255);
+    textLayer.fill(theme.textFill);
     textLayer.text(baseText, textStartX, baselineY);
   }
 
   // ---------------- Grid texture ----------------
-
-  function drawGridTexture(pg) {
-    pg.background(255);
-    pg.stroke('#c8b1b9');
-    pg.strokeWeight(1.5);
-
-    const colors = [
-      color(255, 182, 193),
-      color(173, 216, 230),
-      color(152, 251, 152)
-    ];
-
-    for (let i = 0; i <= pg.width; i += pg.width / 12) {
-      const c = colors[int((i / (pg.width / 12)) % 3)];
-      pg.stroke(c);
-      pg.line(i, 0, i, pg.height);
+  function drawGridTexture(pg, dark=false) {
+    if (dark) {
+      pg.background(40);
+      pg.stroke(190);
+      pg.strokeWeight(1.5);
+      for (let i = 0; i <= pg.width; i += pg.width / 12) {
+        pg.stroke(190);
+        pg.line(i, 0, i, pg.height);
+      }
+      for (let j = 0; j <= pg.height; j += pg.height / 6) {
+        pg.stroke(120);
+        pg.line(0, j, pg.width, j);
+      }
+      pg.stroke(190);
+    } else {
+      pg.background(255);
+      pg.stroke('#c8b1b9');
+      pg.strokeWeight(1.5);
+      const colors = [ color(255,182,193), color(173,216,230), color(152,251,152) ];
+      for (let i = 0; i <= pg.width; i += pg.width / 12) {
+        const c = colors[int((i / (pg.width / 12)) % 3)];
+        pg.stroke(c);
+        pg.line(i, 0, i, pg.height);
+      }
+      for (let j = 0; j <= pg.height; j += pg.height / 6) {
+        const c = colors[int((j / (pg.height / 6)) % 3)];
+        pg.stroke(c);
+        pg.line(0, j, pg.width, j);
+      }
+      pg.stroke('#c8b1b9');
     }
-
-    for (let j = 0; j <= pg.height; j += pg.height / 6) {
-      const c = colors[int((j / (pg.height / 6)) % 3)];
-      pg.stroke(c);
-      pg.line(0, j, pg.width, j);
-    }
-
-    pg.stroke('#c8b1b9');
   }
 
   // ---------------- Resize ----------------
-
   function windowResized() {
     const aspectRatio = 0.25;
     resizeCanvas(windowWidth, windowWidth * aspectRatio);
     computeLayoutTargets();
     updateTextLayer(targetRadius, targetSphereCX);
+    // force refresh of grid when size changes
+    gridTex.clear();
+    drawGridTexture(gridTex, isDarkMode());
   }
   </script>
+
 
   <!-- card stack animation -->
   <script>
@@ -601,6 +642,33 @@ function drawSphereOutline(r) {
       house.src = originalSrc;
     }, 1000);
   }
+</script>
+
+
+<script>
+function toggleHouseImage() {
+  const house = document.getElementById("houseButton");
+  const body = document.body;
+  const audio = document.getElementById("cricketsAudio");
+
+  const originalSrc = "my_assets/Drawing (1).png";
+  const altSrc = "my_assets/Drawing (2).png";
+
+  // Swap image temporarily
+  house.src = altSrc;
+  setTimeout(() => { house.src = originalSrc; }, 1000);
+
+  // Toggle dark mode class
+  body.classList.toggle("dark-mode");
+
+  // Toggle audio playback
+  if (body.classList.contains("dark-mode")) {
+    audio.play();
+  } else {
+    audio.pause();
+    audio.currentTime = 0;
+  }
+}
 </script>
 
 </body>
