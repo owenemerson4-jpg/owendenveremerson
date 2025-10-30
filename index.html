@@ -311,12 +311,23 @@
 
   // ---------------- Layout + Scaling ----------------
 
-  function computeLayoutTargets() {
-    // Slightly smaller sphere relative to the text
-    const baseScale = constrain(width / 900, 0.4, 1);
-    targetRadius = height * 0.28 * baseScale;
-    targetSphereCX = targetRadius + height * 0.14 * baseScale; // extra space before text to avoid overlap
-  }
+function computeLayoutTargets() {
+  // More adaptive scaling — smaller on mobile, smoother transitions
+  const aspect = width / height;
+  const baseScale = constrain(width / 900, 0.4, 1);
+
+  // Shrink sphere more aggressively on narrow viewports
+  let scaleFactor = baseScale;
+  if (width < 600) scaleFactor *= 0.8;
+  if (width < 420) scaleFactor *= 0.7;
+
+  targetRadius = height * 0.28 * scaleFactor;
+
+  // Adjust horizontal spacing dynamically to keep sphere aligned with "wen"
+  const spacingFactor = map(width, 320, 900, 0.10, 0.16, true);
+  targetSphereCX = targetRadius + height * spacingFactor * scaleFactor;
+}
+
 
   // ---------------- Drawing helpers ----------------
 
