@@ -343,7 +343,7 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   <img
   src="my_assets/Drawing (1).png"
   alt="House illustration"
-  class="house-image"
+  class="house-image" style="pointer-events:auto;cursor:pointer;"
   id="houseButton"
   onclick="toggleHouseImage()"
 />
@@ -796,10 +796,66 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+
+
+
+<script id="toggleHouseHandler">
+function toggleHouseImage() {
+  const house = document.getElementById("houseButton");
+  const body  = document.body;
+  const door  = document.getElementById("doorbellSfx");
+  const audio = document.getElementById("cricketsAudio");
+
+  // Play doorbell immediately on user gesture (do not await).
+  try {
+    if (door) { door.currentTime = 0; door.play().catch(()=>{}); }
+  } catch(_) {}
+
+  // SPRITES (supports BW in dark mode if present elsewhere)
+  const isDark = body.classList.contains("dark-mode");
+  const SPRITES = {
+    light: { normal: "my_assets/Drawing (1).png",   click: "my_assets/Drawing (2).png" },
+    dark:  { normal: "my_assets/Drawing (1)BW.png", click: "my_assets/Drawing (2)BW.png" }
+  };
+
+  if (house) house.src = isDark ? SPRITES.dark.click : SPRITES.light.click;
+
+  setTimeout(() => {
+    const nowDark = body.classList.toggle("dark-mode");
+
+    // set resting sprite based on new mode
+    if (house) house.src = nowDark ? SPRITES.dark.normal : SPRITES.light.normal;
+
+    // crickets
+    if (audio) {
+      try {
+        if (nowDark) { audio.currentTime = 0; audio.play(); }
+        else { audio.pause(); audio.currentTime = 0; }
+      } catch(_) {}
+    }
+  }, 1000);
+}
+</script>
+
+
 <script id="tabClickSfx">
 (function(){
   const clickSfx = document.getElementById('clickSfx');
-  const anchors = document.querySelectorAll('.tabs a');
+  const anchors  = document.querySelectorAll('.tabs a');
+
+  function stopAllSfx(){
+    [clickSfx, document.getElementById('doorbellSfx')].forEach(a => {
+      if (a){ try { a.pause(); a.currentTime = 0; } catch(_){} }
+    });
+  }
+
+  // Stop sounds when page is hidden/unloaded (prevents BFCache replay)
+  window.addEventListener('pagehide', stopAllSfx);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stopAllSfx();
+  });
+  window.addEventListener('pageshow', () => stopAllSfx());
+
   anchors.forEach(a => {
     a.addEventListener('click', (e) => {
       if (e.defaultPrevented) return;
@@ -807,13 +863,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       const href = a.getAttribute('href');
-      try {
-        if (clickSfx) {
+
+      let navigated = false;
+      const go = () => { if (!navigated) { navigated = true; window.location.href = href; } };
+
+      // Try to play the click; navigate shortly after or when promise settles
+      if (clickSfx) {
+        try {
           clickSfx.currentTime = 0;
-          clickSfx.play().catch(()=>{});
+          const p = clickSfx.play();
+          // Navigate when audio starts or after a short fallback delay
+          if (p && typeof p.then === 'function') {
+            p.then(() => setTimeout(go, 120)).catch(() => setTimeout(go, 80));
+          } else {
+            setTimeout(go, 120);
+          }
+        } catch(_) {
+          setTimeout(go, 80);
         }
-      } catch(_) {}
-      setTimeout(() => { window.location.href = href; }, 140);
+      } else {
+        go();
+      }
     }, { capture: true });
   });
 })();
