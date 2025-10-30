@@ -312,21 +312,19 @@
   // ---------------- Layout + Scaling ----------------
 
 function computeLayoutTargets() {
-  // More adaptive scaling — smaller on mobile, smoother transitions
-  const aspect = width / height;
+  // Base proportional scaling
   const baseScale = constrain(width / 900, 0.4, 1);
 
-  // Shrink sphere more aggressively on narrow viewports
-  let scaleFactor = baseScale;
-  if (width < 600) scaleFactor *= 0.8;
-  if (width < 420) scaleFactor *= 0.7;
+  // The sphere should maintain roughly the same size relative to text.
+  // Use a constant fraction of width, not height, so it scales with screen size consistently.
+  targetRadius = width * 0.12 * baseScale;
 
-  targetRadius = height * 0.28 * scaleFactor;
-
-  // Adjust horizontal spacing dynamically to keep sphere aligned with "wen"
-  const spacingFactor = map(width, 320, 900, 0.10, 0.16, true);
-  targetSphereCX = targetRadius + height * spacingFactor * scaleFactor;
+  // Adjust horizontal offset to keep sphere centered over the 'O'
+  // rather than drifting left as the viewport narrows.
+  const offsetFactor = map(width, 320, 1200, 0.12, 0.16, true);
+  targetSphereCX = targetRadius * (1 + offsetFactor);
 }
+
 
 
   // ---------------- Drawing helpers ----------------
