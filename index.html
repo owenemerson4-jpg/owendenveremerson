@@ -312,18 +312,32 @@
   // ---------------- Layout + Scaling ----------------
 
 function computeLayoutTargets() {
-  // Base proportional scaling
+  // base proportional factor
   const baseScale = constrain(width / 900, 0.4, 1);
 
-  // The sphere should maintain roughly the same size relative to text.
-  // Use a constant fraction of width, not height, so it scales with screen size consistently.
-  targetRadius = width * 0.12 * baseScale;
+  // smoother scale curve:
+  // - stays generous on mobile
+  // - eases off after tablet size so sphere doesn't blow up on desktop
+  let scaleFactor;
+  if (width < 600) {
+    scaleFactor = 1.05;          // slightly larger on phones
+  } else if (width < 1000) {
+    scaleFactor = 1.0;           // neutral around tablet
+  } else if (width < 1400) {
+    scaleFactor = 0.9;           // modestly reduce for standard desktops
+  } else {
+    scaleFactor = 0.8;           // further taper on ultrawide screens
+  }
 
-  // Adjust horizontal offset to keep sphere centered over the 'O'
-  // rather than drifting left as the viewport narrows.
-  const offsetFactor = map(width, 320, 1200, 0.12, 0.16, true);
+  // compute sphere radius — based on width, with smooth falloff at large sizes
+  targetRadius = width * 0.12 * baseScale * scaleFactor;
+
+  // fine-tuned horizontal offset keeps the sphere nestled over the “O”
+  // slightly more spacing for wide layouts to avoid crowding the text
+  const offsetFactor = map(width, 320, 1400, 0.12, 0.17, true);
   targetSphereCX = targetRadius * (1 + offsetFactor);
 }
+
 
 
 
