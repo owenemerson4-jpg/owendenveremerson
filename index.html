@@ -242,7 +242,56 @@
 
 
 
-/* --- DARK MODE --- */
+
+
+/* --- TONAL FLAT RETRO DARK MODE --- */
+body.dark-mode {
+  background: #000;
+  color: #fff;
+}
+
+/* Sky / clouds */
+body.dark-mode .cloud { background: #111; }
+
+/* Folder layers */
+body.dark-mode .folder-back {
+  background: #111;
+  border-top: 2px solid #fff;
+}
+body.dark-mode .folder-front {
+  background: #1a1a1a;
+  border-top: 2px solid #f5f5f5;
+}
+
+/* Paper */
+body.dark-mode .paper {
+  background:#222;
+  border:2px solid #fff;
+}
+
+/* Text box */
+body.dark-mode .green-text-box {
+  background: #333;
+  border: 2px solid #fff;
+}
+body.dark-mode .green-text-box span { color:#fff; }
+
+/* Tabs */
+body.dark-mode .tab.manila,
+body.dark-mode .tab.green,
+body.dark-mode .tab.pink {
+  background:#1a1a1a;
+  color:#fff;
+  border:1px solid #fff;
+}
+
+/* Cards */
+body.dark-mode .card {
+  background:#222;
+  border:2px solid #fff;
+}
+
+ */
 body.dark-mode {
   background: linear-gradient(to bottom, #0d0d0d 0%, #1a1a1a 80%);
   color: #f5f5f5;
@@ -347,27 +396,29 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   function isDarkMode() {
     return document.body.classList.contains('dark-mode');
   }
-  function getTheme() {
-    if (isDarkMode()) {
-      return {
-        p5Bg: 60,                          // banner background
-        frameStroke: '#999',               // frame outline
-        textOutline: [235,235,235],
-        textFill: 235,
-        glow: [[200,200,200],[140,140,140],[180,180,180]],
-        sphereOutline: '#b3b3b3'
-      };
-    } else {
-      return {
-        p5Bg: '#f7cfcf',
-        frameStroke: '#97717E',
-        textOutline: [151,113,126],
-        textFill: 255,
-        glow: [[173,216,230],[152,251,152],[255,182,193]],
-        sphereOutline: '#97717E'
-      };
-    }
+  
+
+function getTheme() {
+  if (document.body.classList.contains('dark-mode')) {
+    return {
+      p5Bg: '#000000',
+      frameStroke: '#ffffff',
+      textOutline: [245,245,245],
+      textFill: 255,
+      glow: [[255,255,255],[230,230,230],[200,200,200]],
+      sphereOutline: '#ffffff'
+    };
+  } else {
+    return {
+      p5Bg: '#f7cfcf',
+      frameStroke: '#97717E',
+      textOutline: [151,113,126],
+      textFill: 255,
+      glow: [[173,216,230],[152,251,152],[255,182,193]],
+      sphereOutline: '#97717E'
+    };
   }
+}
 
   function setup() {
     const aspectRatio = 0.25;
