@@ -744,5 +744,21 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<script id="preloadHouseSprites">
+document.addEventListener('DOMContentLoaded', () => {
+  const sources = [
+    "my_assets/Drawing (1).png",
+    "my_assets/Drawing (2).png",
+    "my_assets/Drawing (1)BW.png",
+    "my_assets/Drawing (2)BW.png"
+  ];
+  sources.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+});
+</script>
+
 </body>
 </html>
