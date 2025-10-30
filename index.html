@@ -213,25 +213,29 @@
     }
   }
 
-  /* --- HOUSE IMAGE --- */
-  .house-image {
-    position: absolute;
-    right: 6%;
-    top: 14%;
-    height: 12vh;
-    z-index: 9;
-    transform: translateY(50%);
-    pointer-events: none;
-  }
+/* --- HOUSE IMAGE (updated placement) --- */
+.house-image {
+  position: absolute;
+  right: 6%;
+  bottom: calc(100% - var(--folder-back-top, 13.5vh)); 
+  height: 12vh;
+  z-index: 9;
+  pointer-events: none;
+}
 
-  @media (max-width: 768px) {
-    .house-image {
-      right: 4%;
-      top: 16%;
-      height: 10vh;
-      transform: translateY(45%);
-    }
+/* Ensures the house aligns to the top of the manila folder area */
+.folder-back {
+  --folder-back-top: 13.5vh; /* approximate offset from top of viewport */
+}
+
+@media (max-width: 768px) {
+  .house-image {
+    right: 4%;
+    height: 10vh;
+    bottom: calc(100% - var(--folder-back-top, 12vh));
   }
+}
+
 
 </style>
 </head>
