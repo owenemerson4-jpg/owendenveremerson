@@ -176,14 +176,19 @@
     }
 
     /* push card content inside manila below the two banners */
-    .folder-front {
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 0 4%;
-      /* approximate space of red banner (25vw) + green banner (~90px) + spacing */
-      padding-top: calc(25vw + 110px);
-    }
+  .folder-front {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 4%;
+
+    /* Smoothly adapt the top padding:
+       - Minimum 60px on small phones
+       - Grows slightly with viewport width (20vw middle term)
+       - Maximum 100px on large phones
+    */
+    padding-top: calc(25vw + clamp(60px, 20vw, 100px));
+  }
 
     /* big, centered card stack */
   .card-stack {
