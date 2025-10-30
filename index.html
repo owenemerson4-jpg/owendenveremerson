@@ -212,6 +212,27 @@
       z-index:9999;
     }
   }
+
+  /* --- HOUSE IMAGE --- */
+  .house-image {
+    position: absolute;
+    right: 6%;
+    top: 14%;
+    height: 12vh;
+    z-index: 9;
+    transform: translateY(50%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .house-image {
+      right: 4%;
+      top: 16%;
+      height: 10vh;
+      transform: translateY(45%);
+    }
+  }
+
 </style>
 </head>
 
@@ -222,6 +243,9 @@
 
   <!-- Folder layers -->
   <div class="folder-back" aria-hidden="true"></div>
+
+  <!-- House image sitting on top of the manila folder -->
+  <img src="my_assets/Drawing (1).png" alt="House illustration" class="house-image">
 <div class="tabs">
   <a href="index.html" class="tab manila">About</a>
   <a href="work.html" class="tab green">Work</a>
