@@ -354,6 +354,9 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   <a href="work.html" class="tab green">Work</a>
   <a href="contact.html" class="tab pink">Contact</a>
 </div>
+  <!-- SFX audio elements -->
+  <audio id="clickSfx" src="my_assets/click.mp3" preload="auto"></audio>
+  <audio id="doorbellSfx" src="my_assets/doorbell.mp3" preload="auto"></audio>
   <div class="paper" aria-hidden="true"></div>
 
   <!-- p5 sketch holder -->
@@ -790,6 +793,30 @@ document.addEventListener('DOMContentLoaded', () => {
     img.src = src;
   });
 });
+</script>
+
+
+<script id="tabClickSfx">
+(function(){
+  const clickSfx = document.getElementById('clickSfx');
+  const anchors = document.querySelectorAll('.tabs a');
+  anchors.forEach(a => {
+    a.addEventListener('click', (e) => {
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const href = a.getAttribute('href');
+      try {
+        if (clickSfx) {
+          clickSfx.currentTime = 0;
+          clickSfx.play().catch(()=>{});
+        }
+      } catch(_) {}
+      setTimeout(() => { window.location.href = href; }, 140);
+    }, { capture: true });
+  });
+})();
 </script>
 
 </body>
