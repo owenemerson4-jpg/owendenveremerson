@@ -343,30 +343,47 @@ function computeLayoutTargets() {
 
   // ---------------- Drawing helpers ----------------
 
-  function drawSphereOutline(r) {
-    const outlineColor = '#97717E';
-    const cx = (r + height * 0.14);
-    const cy = height / 2;
-    const d = r * 2;
+function drawSphereOutline(r) {
+  // Color matches your existing reddish-brown accent
+  const outlineColor = '#97717E';
 
-    push();
-    resetMatrix();
-    translate(-width / 2, -height / 2);
-    noFill();
+  // Compute the live center of the sphere, matching the translation logic in draw()
+  const cx = (width / 2) - (width / 2 - targetSphereCX);
+  const cy = height / 2;
 
-    for (let i = 4; i >= 1; i--) {
-      const w = 1 + i * 1.8;
-      const a = 10 + i * 3;
-      stroke(redFromHex(outlineColor), greenFromHex(outlineColor), blueFromHex(outlineColor), a);
-      strokeWeight(w);
-      ellipse(cx, cy, d + i * 3, d + i * 3);
-    }
+  // Calculate an adaptive ellipse diameter that envelopes the sphere snugly.
+  // Slightly enlarge by ~6% to look like it wraps around the "volume" of the sphere.
+  const d = r * 2 * 1.06;
 
-    stroke(outlineColor);
-    strokeWeight(3);
-    ellipse(cx, cy, d, d);
-    pop();
+  // Dynamic stroke scaling: thinner on small devices
+  const scaleW = constrain(width / 900, 0.4, 1);
+
+  push();
+  resetMatrix();
+  translate(-width / 2, -height / 2);
+  noFill();
+
+  // Layered glow / depth pass
+  for (let i = 3; i >= 1; i--) {
+    const w = (1 + i * 1.4) * scaleW;
+    const a = 12 + i * 4;
+    stroke(
+      redFromHex(outlineColor),
+      greenFromHex(outlineColor),
+      blueFromHex(outlineColor),
+      a
+    );
+    strokeWeight(w);
+    ellipse(cx, cy, d + i * 2, d + i * 2);
   }
+
+  // Main contour stroke
+  stroke(outlineColor);
+  strokeWeight(2.4 * scaleW);
+  ellipse(cx, cy, d, d);
+  pop();
+}
+
 
   function drawFrameOutline() {
     push();
