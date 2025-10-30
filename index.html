@@ -7,10 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root{
-    /* will be updated dynamically on mobile to equal banner height + margin */
-    --belowBanner: 180px;
-  }
   html, body {
     height: 100%;
     width: 100%;
@@ -96,7 +92,7 @@
   .tab.pink{ background:#f7cfcf; color:#5a3131; }
   .tab:hover{ transform:translateY(-2px); } .tab:active{ transform:translateY(0); }
 
-  /* --- P5 CANVAS POSITIONING (desktop intact) --- */
+  /* --- P5 CANVAS POSITIONING (desktop) --- */
   #p5-holder {
     position: absolute;
     z-index: 8;
@@ -113,7 +109,7 @@
     pointer-events: auto !important;
   }
 
-  /* --- GREEN TEXT BOX (desktop intact) --- */
+  /* --- GREEN TEXT BOX (desktop) --- */
   .green-text-box {
     position: absolute;
     left: 2%;
@@ -142,48 +138,59 @@
     overflow-wrap: anywhere;
   }
 
-  /* --- MOBILE: keep inside manila, banner + two-column below --- */
+  /* --- MOBILE: banner -> banner -> big card stack (all inside manila) --- */
   @media (max-width: 768px) {
-    /* p5 banner full-width at top of manila */
+
+    /* p5 banner full-width below the white seam */
     #p5-holder {
-      position: absolute;
+      position: relative;
       left: 0;
-      top: calc(20vh + 6px); /* just under the white-paper / manila seam */
+      top: auto;
       width: 100%;
-      transform: none;       /* no scale on mobile */
+      transform: none;
+      margin: calc(20vh + 6px) auto 0 auto; /* sits at top of manila */
+      z-index: 6;
+      pointer-events: none;
     }
 
-    /* push card area down so it starts below the banner */
-    .folder-front {
-      padding-top: var(--belowBanner); /* set via JS to banner height + margin */
-      padding-left: 4%;
-      padding-right: 4%;
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 4%;
+    canvas.p5Canvas {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
     }
 
-    /* left half: green box */
+    /* green banner below red banner, full width */
     .green-text-box {
-      position: absolute; /* remains separate from folder-front content */
-      left: 4%;
-      width: 46%;
-      top: calc(20vh + var(--belowBanner)); /* sits directly below the banner */
-      z-index: 6;  /* above manila, below tabs */
-      padding: 0.5em 0.6em;
+      position: relative;
+      top: auto;
+      left: 0;
+      width: calc(100% - 8%);
+      margin: 2vh auto 0 auto;
+      padding: 0.8em 1em;
+      z-index: 6;
+      text-align: center;
     }
     .green-text-box span {
-      font-size: clamp(0.9rem, 2.8vw, 1.1rem);
+      font-size: clamp(1rem, 3.6vw, 1.25rem);
       line-height: 1.25;
     }
 
-    /* right half: card stack */
+    /* push card content inside manila below the two banners */
+    .folder-front {
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 4%;
+      /* approximate space of red banner (25vw) + green banner (~90px) + spacing */
+      padding-top: calc(25vw + 110px);
+    }
+
+    /* big, centered card stack */
     .card-stack {
-      width: 46%;
-      max-width: none;
-      margin-left: auto;
-      aspect-ratio: 3/4;
+      width: 96%;
+      max-width: 560px;
+      margin: 3vh auto 8vh;
+      transform: none;
     }
   }
 
@@ -203,7 +210,7 @@
 </head>
 
 <body>
-  <!-- Sky -->
+  <!-- Clouds -->
   <div class="cloud small" aria-hidden="true"></div>
   <div class="cloud large" aria-hidden="true"></div>
 
@@ -237,75 +244,263 @@
   <!-- p5 library -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- FULL p5 sketch (unchanged) -->
+  <!-- FULL p5 sketch (unchanged from your stable version) -->
   <script>
-  /* your entire p5 sketch exactly as in your working version */
-  </script>
+  let gridTex;
+  let textLayer;
+  let sphereDetail = 50;
+  let autoRotate = 0;
 
-  <!-- Card stack animation (unchanged) -->
-  <script>
-    const stack = document.querySelector('.card-stack');
-    let intervalTime = 4000;
-    let lastTime = 0;
+  // Smooth layout targets
+  let targetRadius = 0;
+  let targetSphereCX = 0;
+  let radius = 0;
+  let sphereCX = 0;
 
-    function cycleCards() {
-      const cards = stack.querySelectorAll('.card');
-      if (cards.length <= 1) return;
-      const top = cards[0];
-      const second = cards[1];
+  function setup() {
+    const aspectRatio = 0.25;
+    const cnv = createCanvas(windowWidth, windowWidth * aspectRatio, WEBGL);
+    cnv.parent("p5-holder");
+    setAttributes('alpha', true);
+    noStroke();
 
-      top.style.transform = 'translateX(110%) rotate(0deg)';
-      top.style.opacity = '0';
-      second.style.transform = 'translateY(0) scale(1)';
-      second.style.zIndex = 3;
+    // Grid texture for sphere
+    gridTex = createGraphics(512, 256);
+    gridTex.clear();
+    drawGridTexture(gridTex);
 
-      for (let i = 2; i < cards.length; i++) {
-        const y = 8 * (i - 1);
-        const scale = 1 - 0.03 * (i - 1);
-        cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
-        cards[i].style.zIndex = 3 - i;
-      }
+    // Text layer
+    textLayer = createGraphics(width, height);
+    textLayer.pixelDensity(1);
+    textLayer.clear();
 
-      setTimeout(() => {
-        top.style.transition = 'none';
-        const n = cards.length;
-        top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
-        top.style.opacity = '1';
-        top.style.zIndex = 1;
-        stack.appendChild(top);
-        void top.offsetWidth; // reflow
-        top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
-      }, 600);
+    computeLayoutTargets();
+    radius = targetRadius;
+    sphereCX = targetSphereCX;
+    updateTextLayer(radius, sphereCX);
+  }
+
+  function draw() {
+    background('#f7cfcf');
+
+    // Smoothly interpolate toward target layout values
+    radius = lerp(radius, targetRadius, 0.08);
+    sphereCX = lerp(sphereCX, targetSphereCX, 0.08);
+
+    push();
+    translate(-width / 2, 0, 0);
+
+    autoRotate += 0.003;
+    push();
+    translate(sphereCX, 0, 0);
+    const rotY = map(mouseX, 0, width, -PI, PI);
+    const rotX = map(mouseY, 0, height, -PI / 2, PI / 2);
+    rotateY(rotY + autoRotate);
+    rotateX(rotX * 0.5);
+    texture(gridTex);
+    sphere(radius, sphereDetail, sphereDetail);
+    pop();
+
+    updateTextLayer(radius, sphereCX);
+    image(textLayer, 0, -height / 2);
+    pop();
+
+    drawSphereOutline(radius);
+    drawFrameOutline();
+  }
+
+  // ---------------- Layout + Scaling ----------------
+
+  function computeLayoutTargets() {
+    // Slightly smaller sphere relative to the text
+    const baseScale = constrain(width / 900, 0.4, 1);
+    targetRadius = height * 0.28 * baseScale;
+    targetSphereCX = targetRadius + height * 0.14 * baseScale; // extra space before text to avoid overlap
+  }
+
+  // ---------------- Drawing helpers ----------------
+
+  function drawSphereOutline(r) {
+    const outlineColor = '#97717E';
+    const cx = (r + height * 0.14);
+    const cy = height / 2;
+    const d = r * 2;
+
+    push();
+    resetMatrix();
+    translate(-width / 2, -height / 2);
+    noFill();
+
+    for (let i = 4; i >= 1; i--) {
+      const w = 1 + i * 1.8;
+      const a = 10 + i * 3;
+      stroke(redFromHex(outlineColor), greenFromHex(outlineColor), blueFromHex(outlineColor), a);
+      strokeWeight(w);
+      ellipse(cx, cy, d + i * 3, d + i * 3);
     }
 
-    function animationLoop(timestamp) {
-      if (timestamp - lastTime >= intervalTime) {
-        cycleCards();
-        lastTime = timestamp;
-      }
-      requestAnimationFrame(animationLoop);
+    stroke(outlineColor);
+    strokeWeight(3);
+    ellipse(cx, cy, d, d);
+    pop();
+  }
+
+  function drawFrameOutline() {
+    push();
+    resetMatrix();
+    translate(-width / 2, -height / 2, 0);
+    noFill();
+    stroke('#97717E');
+    strokeWeight(2);
+    rect(0.5, 0.5, width - 3, height - 3);
+    pop();
+  }
+
+  // ---------------- Color + Text ----------------
+
+  function redFromHex(hex){ return parseInt(hex.slice(1,3), 16); }
+  function greenFromHex(hex){ return parseInt(hex.slice(3,5), 16); }
+  function blueFromHex(hex){ return parseInt(hex.slice(5,7), 16); }
+
+  function updateTextLayer(r = 0, sCX = 0) {
+    if (textLayer.width !== width || textLayer.height !== height) {
+      textLayer.resizeCanvas(width, height);
+    }
+    textLayer.clear();
+
+    const pastelColors = [
+      '#97717E',
+      [173, 216, 230],
+      [152, 251, 152]
+    ];
+
+    textLayer.textAlign(textLayer.LEFT, textLayer.CENTER);
+    textLayer.textFont('IBM Plex Sans, monospace');
+
+    const baseText = "wen Denver Emerson";
+
+    // Increase default font size for more fill
+    const availableW = width - (sCX + r * 1.3);
+    let fontSize = height * 1.0; // larger default
+    textLayer.textSize(fontSize);
+    let textW = textLayer.textWidth(baseText);
+
+    // Scale down only if needed
+    if (textW > availableW) {
+      fontSize *= (availableW / textW) * 0.95;
+      textLayer.textSize(fontSize);
+    }
+
+    // Position text start to avoid overlap
+    const textStartX = sCX + r * 1.05; // cushion after sphere
+    const baselineY = height / 2;
+
+    // Iridescent glow outline
+    pastelColors.forEach((rgb, idx) => {
+      textLayer.stroke(rgb[0], rgb[1], rgb[2], 220);
+      textLayer.strokeWeight(3);
+      textLayer.noFill();
+      textLayer.text(baseText, textStartX + idx * 0.6, baselineY + idx * 0.4);
+    });
+
+    // Outline and fill
+    textLayer.stroke('#97717E');
+    textLayer.strokeWeight(6);
+    textLayer.noFill();
+    textLayer.text(baseText, textStartX, baselineY);
+
+    textLayer.noStroke();
+    textLayer.fill(255);
+    textLayer.text(baseText, textStartX, baselineY);
+  }
+
+  // ---------------- Grid texture ----------------
+
+  function drawGridTexture(pg) {
+    pg.background(255);
+    pg.stroke('#c8b1b9');
+    pg.strokeWeight(1.5);
+
+    const colors = [
+      color(255, 182, 193),
+      color(173, 216, 230),
+      color(152, 251, 152)
+    ];
+
+    for (let i = 0; i <= pg.width; i += pg.width / 12) {
+      const c = colors[int((i / (pg.width / 12)) % 3)];
+      pg.stroke(c);
+      pg.line(i, 0, i, pg.height);
+    }
+
+    for (let j = 0; j <= pg.height; j += pg.height / 6) {
+      const c = colors[int((j / (pg.height / 6)) % 3)];
+      pg.stroke(c);
+      pg.line(0, j, pg.width, j);
+    }
+
+    pg.stroke('#c8b1b9');
+  }
+
+  // ---------------- Resize ----------------
+
+  function windowResized() {
+    const aspectRatio = 0.25;
+    resizeCanvas(windowWidth, windowWidth * aspectRatio);
+    computeLayoutTargets();
+    updateTextLayer(targetRadius, targetSphereCX);
+  }
+  </script>
+
+  <!-- card stack animation -->
+  <script>
+  const stack = document.querySelector('.card-stack');
+  let intervalTime = 4000;
+  let lastTime = 0;
+
+  function cycleCards() {
+    const cards = stack.querySelectorAll('.card');
+    if (cards.length <= 1) return;
+    const top = cards[0];
+    const second = cards[1];
+
+    top.style.transform = 'translateX(110%) rotate(0deg)';
+    top.style.opacity = '0';
+
+    second.style.transform = 'translateY(0) scale(1)';
+    second.style.zIndex = 3;
+
+    for (let i = 2; i < cards.length; i++) {
+      const y = 8 * (i - 1);
+      const scale = 1 - 0.03 * (i - 1);
+      cards[i].style.transform = `translateY(${y}px) scale(${scale})`;
+      cards[i].style.zIndex = 3 - i;
+    }
+
+    setTimeout(() => {
+      top.style.transition = 'none';
+      const n = cards.length;
+      top.style.transform = `translateY(${8 * (n - 1)}px) scale(${1 - 0.03 * (n - 1)})`;
+      top.style.opacity = '1';
+      top.style.zIndex = 1;
+      stack.appendChild(top);
+      void top.offsetWidth;
+      top.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+    }, 600);
+  }
+
+  function animationLoop(timestamp) {
+    if (timestamp - lastTime >= intervalTime) {
+      cycleCards();
+      lastTime = timestamp;
     }
     requestAnimationFrame(animationLoop);
-  </script>
+  }
+  requestAnimationFrame(animationLoop);
 
-  <!-- 🔧 Mobile layout helper: measure p5 banner height & push content below -->
-  <script>
-    function updateMobileOffsets(){
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        const canvas = document.querySelector('canvas.p5Canvas');
-        if (canvas) {
-          const h = canvas.getBoundingClientRect().height || (window.innerWidth * 0.25);
-          const margin = 16; // space between banner and elements below
-          document.documentElement.style.setProperty('--belowBanner', (h + margin) + 'px');
-        }
-      }
-    }
-    // run when fonts load, when p5 attaches, and on resize
-    window.addEventListener('load', () => setTimeout(updateMobileOffsets, 50));
-    window.addEventListener('resize', () => setTimeout(updateMobileOffsets, 50));
-    // also observe DOM changes (p5 canvas creation)
-    const obs = new MutationObserver(updateMobileOffsets);
-    obs.observe(document.body, { childList: true, subtree: true });
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('portrait').catch(() => {});
+  }
   </script>
 </body>
 </html>
