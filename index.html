@@ -347,6 +347,7 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   id="houseButton"
   onclick="toggleHouseImage()"
 />
+<audio id="cricketsAudio" src="my_assets/classiccrickets.wav" loop></audio>
 
 <div class="tabs">
   <a href="index.html" class="tab manila">About</a>
@@ -679,21 +680,40 @@ function getTheme() {
     screen.orientation.lock('portrait').catch(() => {});
   }
   </script>
- <script>
-  function toggleHouseImage() {
-    const house = document.getElementById("houseButton");
-    const originalSrc = "my_assets/Drawing (1).png";
-    const altSrc = "my_assets/Drawing (2).png";
+ 
+<script>
+function toggleHouseImage() {
+  const house = document.getElementById("houseButton");
+  const body = document.body;
+  const audio = document.getElementById("cricketsAudio");
 
-    // Swap to the alternate image
-    house.src = altSrc;
+  const originalSrc = "my_assets/Drawing (1).png";
+  const altSrc = "my_assets/Drawing (2).png";
 
-    // Wait one second, then swap back
-    setTimeout(() => {
-      house.src = originalSrc;
-    }, 1000);
+  // visual click animation (swap image temporarily)
+  house.src = altSrc;
+  setTimeout(() => { house.src = originalSrc; }, 1000);
+
+  // toggle dark mode class
+  const nowDark = body.classList.toggle("dark-mode");
+
+  // play/pause looping crickets on user gesture
+  if (audio) {
+    try {
+      if (nowDark) {
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    } catch (e) {
+      // ignore autoplay errors; user can click again
+    }
   }
+}
 </script>
+
 
 
 <script>
@@ -720,6 +740,14 @@ function toggleHouseImage() {
     audio.currentTime = 0;
   }
 }
+</script>
+
+
+<script id="setCricketsVolumeOnLoad">
+document.addEventListener('DOMContentLoaded', () => {
+  const a = document.getElementById('cricketsAudio');
+  if (a) a.volume = 0.35; // softer default volume
+});
 </script>
 
 </body>
