@@ -396,6 +396,10 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   let sphereDetail = 50;
   let autoRotate = 0;
 
+  // Moon texture for dark mode
+  let moonImg = null;
+  let moonReady = false;
+
   // Smooth layout targets
   let targetRadius = 0;
   let targetSphereCX = 0;
@@ -430,6 +434,13 @@ function getTheme() {
     };
   }
 }
+
+  function preload() {
+    // Preload moon texture
+    try {
+      moonImg = loadImage('my_assets/MoonTexture.jpg', () => { moonReady = true; }, () => { moonReady = false; });
+    } catch(e) { moonReady = false; }
+  }
 
   function setup() {
     const aspectRatio = 0.25;
@@ -476,7 +487,7 @@ function getTheme() {
     const rotX = map(mouseY, 0, height, -PI / 2, PI / 2);
     rotateY(rotY + autoRotate);
     rotateX(rotX * 0.5);
-    texture(gridTex);
+    texture(dark && moonReady ? moonImg : gridTex);
     sphere(radius, sphereDetail, sphereDetail);
     pop();
 
