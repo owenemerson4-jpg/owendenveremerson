@@ -329,6 +329,30 @@ body.dark-mode .card { background:#181818; border-color:#444; }
 body.dark-mode .paper { background:#444; border-color:#666; }
 
 </style>
+
+  <!-- Performance preloads -->
+  <link rel="preload" href="p5.min.js" as="script">
+  <link rel="preload" href="my_assets/MoonTexture.jpg" as="image">
+  <link rel="preload" href="my_assets/HeartSpinWebsite.mp4" as="image">
+  <link rel="preload" href="my_assets/img2.png" as="image">
+  <link rel="preload" href="my_assets/MSclip.mp4" as="image">
+  <link rel="preload" href="my_assets/img4.png" as="image">
+  <link rel="preload" href="my_assets/img5.png" as="image">
+
+
+  <style>
+  /* Skeleton shimmer placeholders */
+  .skeleton {
+    background: linear-gradient(90deg, #ccc 25%, #ddd 37%, #ccc 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  </style>
+
 </head>
 
 <body>
@@ -385,7 +409,7 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   </div>
 
   <!-- p5 library -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js" defer></script>
 
   <!-- FULL p5 sketch (unchanged from your stable version) -->
   
@@ -916,6 +940,48 @@ function toggleHouseImage() {
     }, { capture: true });
   });
 })();
+</script>
+
+
+<script id="perfOptimizations">
+// Performance helpers for startup smoothness
+document.addEventListener('DOMContentLoaded', () => {
+  // Remove skeletons once p5 + cards ready
+  const hideSkeleton = id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  };
+  window.removeSkeletons = () => {
+    hideSkeleton('p5-skeleton');
+    hideSkeleton('card-skeleton');
+  };
+
+  // Slight delay for card animation init
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (typeof initCardCycle === 'function') initCardCycle();
+    }, 400);
+  });
+});
+
+// Optimize p5 setup using requestIdleCallback
+if (typeof requestIdleCallback === 'function') {
+  const oldSetup = window.setup;
+  window.setup = function() {
+    requestIdleCallback(() => {
+      if (oldSetup) oldSetup();
+    });
+  };
+}
+
+// Reduce pixel density slightly for performance
+const oldP5Setup = window.setup;
+window.setup = function() {
+  if (typeof pixelDensity === 'function') {
+    pixelDensity(window.devicePixelRatio > 1 ? 1.5 : 1);
+  }
+  if (oldP5Setup) oldP5Setup();
+};
 </script>
 
 </body>
