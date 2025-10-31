@@ -333,11 +333,11 @@ body.dark-mode .paper { background:#444; border-color:#666; }
   <!-- Performance preloads -->
   <link rel="preload" href="p5.min.js" as="script">
   <link rel="preload" href="my_assets/MoonTexture.jpg" as="image">
+  <link rel="preload" href="my_assets/img1.jpg" as="image">
   <link rel="preload" href="my_assets/HeartSpinWebsite.mp4" as="image">
   <link rel="preload" href="my_assets/img2.png" as="image">
   <link rel="preload" href="my_assets/MSclip.mp4" as="image">
-  <link rel="preload" href="my_assets/img4.png" as="image">
-  <link rel="preload" href="my_assets/img5.png" as="image">
+  <link rel="preload" href="my_assets/img3.png" as="image">
 
 
   <style>
@@ -467,14 +467,15 @@ function getTheme() {
   }
 
   function setup() {
-    const aspectRatio = 0.25;
+    if (typeof pixelDensity === 'function') { try { pixelDensity(window.devicePixelRatio > 1 ? 1.5 : 1); } catch(e){} }
+const aspectRatio = 0.25;
     const cnv = createCanvas(windowWidth, windowWidth * aspectRatio, WEBGL);
     cnv.parent("p5-holder");
     setAttributes('alpha', true);
     noStroke();
 
     // Grid texture for sphere
-    gridTex = createGraphics(512, 256);
+    gridTex = createGraphics(384, 192);
     gridTex.clear();
     drawGridTexture(gridTex, isDarkMode());
 
@@ -943,45 +944,21 @@ function toggleHouseImage() {
 </script>
 
 
-<script id="perfOptimizations">
-// Performance helpers for startup smoothness
+
+
+
+<script id="skeletonHelper">
 document.addEventListener('DOMContentLoaded', () => {
-  // Remove skeletons once p5 + cards ready
-  const hideSkeleton = id => {
-    const el = document.getElementById(id);
-    if (el) el.remove();
+  const kill = (id) => { const el = document.getElementById(id); if (el) el.remove(); };
+  const waitCanvas = () => {
+    const canvas = document.querySelector('canvas.p5Canvas');
+    if (canvas) { kill('p5-skeleton'); }
+    else { requestAnimationFrame(waitCanvas); }
   };
-  window.removeSkeletons = () => {
-    hideSkeleton('p5-skeleton');
-    hideSkeleton('card-skeleton');
-  };
-
-  // Slight delay for card animation init
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      if (typeof initCardCycle === 'function') initCardCycle();
-    }, 400);
-  });
+  waitCanvas();
+  // card skeleton clears after first layout
+  window.addEventListener('load', () => setTimeout(() => kill('card-skeleton'), 500));
 });
-
-// Optimize p5 setup using requestIdleCallback
-if (typeof requestIdleCallback === 'function') {
-  const oldSetup = window.setup;
-  window.setup = function() {
-    requestIdleCallback(() => {
-      if (oldSetup) oldSetup();
-    });
-  };
-}
-
-// Reduce pixel density slightly for performance
-const oldP5Setup = window.setup;
-window.setup = function() {
-  if (typeof pixelDensity === 'function') {
-    pixelDensity(window.devicePixelRatio > 1 ? 1.5 : 1);
-  }
-  if (oldP5Setup) oldP5Setup();
-};
 </script>
 
 </body>
