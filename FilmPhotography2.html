@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Film Photography- Owen Denver Emerson</title>
+
+<style>
+  :root{
+    --bg: #ffffff;
+    --gap: 8px;
+    --col-min: 220px;
+    --overlay-bg: rgba(0,0,0,.72);
+    --back-size: 36px;
+    --fade-cell: 60px;
+  }
+
+  html,body{
+    height:100%;
+    background:var(--bg);
+    margin:0;
+    padding:0;
+    overflow-x:hidden;
+    color:#111;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+
+  /* Back arrow */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 1.8rem;
+  color: #222;
+  text-decoration: none;
+  z-index: 10001;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.back-btn:hover {
+  transform: translateX(-3px);
+  opacity: 0.7;
+}
+
+  /* Masonry grid */
+  .gallery{
+    column-width: var(--col-min);
+    column-gap: var(--gap);
+    padding: calc(var(--gap) + 16px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .tile{
+    display:block;
+    break-inside: avoid;
+    margin: 0 0 var(--gap) 0;
+    border-radius: 0;
+    overflow:hidden;
+    background:#f6f6f6;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    position:relative;
+
+    /* *** NEW *** */
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 200px;
+  }
+  .tile img{
+    width:100%;
+    height:auto;
+    display:block;
+    vertical-align:bottom;
+    object-fit:cover;
+  }
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed; inset:0;
+    background:var(--overlay-bg);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:10000;
+    padding:24px;
+  }
+  .lightbox.open{ display:flex; }
+  .lightbox__inner{
+    position:relative; max-width: min(1400px, 96vw); max-height: 90vh;
+  }
+  .lightbox__img{
+    max-width:100%; max-height:90vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  }
+  .lightbox__close{
+    position:absolute; top:8px; left:8px;
+    width:36px; height:36px; border-radius:8px; border:0;
+    display:grid; place-items:center;
+    background:#000; color:#fff; cursor:pointer;
+  }
+
+  /* Startup fade */
+  #white-transition{
+    position:fixed; inset:0;
+    background:#000;
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--fade-cell), 1fr));
+    grid-auto-rows: var(--fade-cell);
+    z-index: 10002;
+    pointer-events:none;
+  }
+  .white-block{ background:#fff; opacity:0; transition:none; }
+
+  @media (max-width: 720px){
+    :root{ --gap: 6px; --col-min: 170px; }
+  }
+  @media (max-width: 420px){
+    :root{ --col-min: 150px; }
+  }
+</style>
+</head>
+
+<body>
+<!-- Back button -->
+<a class="back-btn" href="work.html" aria-label="Back to Work">←
+</a>
+
+<!-- Gallery -->
+<main id="gallery" class="gallery" aria-live="polite"></main>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+  <div class="lightbox__inner">
+    <button class="lightbox__close" aria-label="Close (Esc)">&times;</button>
+    <img id="lightbox-img" class="lightbox__img" alt="" />
+  </div>
+</div>
+
+<!-- Fade transition -->
+<div id="white-transition" aria-hidden="true"></div>
+
+<script>
+// ===== CONFIG =====
+// Corrected for GitHub Pages under /owendenveremerson/
+const REPO_BASE = "/owenemerson4-jpg.github.io/";
+
+// *** NEW *** Two image roots: thumbs + full-resolution
+const THUMB_BASE_PATH = REPO_BASE + "websitephotos/thumbs/";
+const FULL_BASE_PATH  = REPO_BASE + "websitephotos/full/";
+
+const MANIFEST_URL = REPO_BASE + "photolist.json";
+
+const BATCH_SIZE = 60;
+
+// ===== Lightbox logic =====
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+function openLightbox(src){
+  lightboxImg.src = src; 
+  lightbox.classList.add("open");
+}
+function closeLightbox(){
+  lightbox.classList.remove("open");
+  lightboxImg.src="";
+}
+lightbox.addEventListener("click", e => { if(e.target===lightbox) closeLightbox(); });
+lightbox.querySelector(".lightbox__close").addEventListener("click", closeLightbox);
+document.addEventListener("keydown", e => { if(e.key==="Escape") closeLightbox(); });
+
+// ===== Gallery logic =====
+const gallery=document.getElementById("gallery");
+let canonical=[], appendedWraps=0;
+
+// *** NEW *** Create tile using thumbnail, store full res for lightbox
+function makeTile(name){
+  const a=document.createElement("a");
+  a.className="tile";
+  a.href = FULL_BASE_PATH + name;
+
+  const img=document.createElement("img");
+  img.loading="lazy";
+  img.decoding="async";
+  img.fetchPriority = "low";         // *** NEW ***
+  img.src = THUMB_BASE_PATH + name;  // *** NEW ***
+  img.dataset.full = FULL_BASE_PATH + name; // *** NEW ***
+  img.alt="";
+
+  a.appendChild(img);
+
+  a.addEventListener("click",e=>{
+    e.preventDefault();
+    openLightbox(img.dataset.full);
+  });
+
+  return {el:a, name};
+}
+
+// *** NEW *** Build sorted gallery using precomputed HSL (no heavy decode)
+async function buildColorSortedGallery(records){
+  if(!records.length)return;
+
+  // Direct HSL ordering from manifest
+  const sorted = records.slice().sort((a,b)=>
+    a.h===b.h ? a.l-b.l : a.h-b.h
+  );
+
+  canonical = sorted.map(rec => makeTile(rec.name).el);
+
+  renderInitial(canonical);
+  window.addEventListener("scroll",maybeAppendWrap);
+}
+
+function renderInitial(list){
+  gallery.innerHTML="";
+  const frag=document.createDocumentFragment();
+  list.forEach(el=>frag.appendChild(el.cloneNode(true)));
+  gallery.appendChild(frag);
+  appendedWraps=1;
+}
+
+function maybeAppendWrap(){
+  const {scrollTop,clientHeight,scrollHeight}=document.documentElement;
+  if(scrollTop+clientHeight>scrollHeight-600){ appendNextWrap(); }
+}
+
+function appendNextWrap(){
+  const startIndex=(appendedWraps*BATCH_SIZE)%canonical.length;
+  const frag=document.createDocumentFragment();
+
+  for(let i=0;i<BATCH_SIZE;i++){
+    const idx=(startIndex+i)%canonical.length;
+    // Avoid cloning images too deeply
+    const wrapper = canonical[idx].cloneNode(false);
+    const imgOrig = canonical[idx].querySelector("img");
+    const img = imgOrig.cloneNode(false);
+    img.src = imgOrig.src;
+    img.dataset.full = imgOrig.dataset.full;
+    wrapper.appendChild(img);
+
+    frag.appendChild(wrapper);
+  }
+  gallery.appendChild(frag);
+  appendedWraps++;
+}
+
+// ===== Load from photolist.json =====
+// *** NEW *** Expects: [{name:"file.jpg",h:0.1,s:0.3,l:0.5}, ...]
+async function loadImages(){
+  try{
+    const res=await fetch(MANIFEST_URL);
+    const list=await res.json();
+
+    console.log("Photo list loaded:", list);
+    await buildColorSortedGallery(list);
+  }catch(err){
+    console.error("Failed to load photolist.json:",err);
+    gallery.textContent="⚠️ Could not load photo list.";
+  }
+}
+document.addEventListener("DOMContentLoaded",loadImages);
+
+// ===== Fade-in transition (UNCHANGED) =====
+document.addEventListener("DOMContentLoaded",()=>{
+  const container=document.getElementById("white-transition");
+  const cols=Math.ceil(window.innerWidth/parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')));
+  const rows=Math.ceil(window.innerHeight/parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')));
+  const total=cols*rows;
+  for(let i=0;i<total;i++){const b=document.createElement("div");b.className="white-block";container.appendChild(b);}
+  const blocks=Array.from(container.children); blocks.sort(()=>Math.random()-0.5);
+  let index=0; const step=25;
+  const interval=setInterval(()=>{
+    for(let i=0;i<step&&index<blocks.length;i++,index++){blocks[index].style.opacity=1;}
+    if(index>=blocks.length){
+      clearInterval(interval);
+      setTimeout(()=>{
+        container.style.transition="opacity 0.3s ease-out";
+        container.style.opacity=0;
+        setTimeout(()=>container.remove(),400);
+      },150);
+    }
+  },25);
+});
+</script>
+</body>
+</html>
