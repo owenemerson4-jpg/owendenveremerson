@@ -41,21 +41,14 @@
   opacity: 0.7;
 }
 
-  /* Masonry grid container (common to both CSS + JS versions) */
+  /* Masonry grid */
+
+  /* *** CHANGED: removed column-* so JS masonry can fully control layout */
   .gallery{
     padding: calc(var(--gap) + 16px);
     max-width: 1400px;
     margin: 0 auto;
-    position: relative;
-  }
-
-  /* CSS masonry for browsers that support grid-template-rows: masonry */
-  .gallery.masonry-grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--col-min), 1fr));
-    gap: var(--gap);
-    grid-auto-flow: dense;
-    grid-template-rows: masonry;
+    position: relative;           /* *** NEW: needed for absolute-positioned tiles */
   }
 
   .tile{
@@ -65,7 +58,11 @@
     overflow:hidden;
     background:#f6f6f6;
     box-shadow: 0 1px 2px rgba(0,0,0,.06);
-    position:relative;
+    position:absolute;            /* *** NEW: JS masonry will place these */
+    left:0; top:0;                /* *** NEW: default, updated in JS */
+
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 200px;
   }
   .tile img{
     width:100%;
@@ -145,7 +142,7 @@
 // Corrected for GitHub Pages under /owendenveremerson/
 const REPO_BASE = "/owenemerson4-jpg.github.io/";
 
-// Thumbnail + full-res roots (Option A structure)
+// Two image roots: thumbs + full-resolution
 const THUMB_BASE_PATH = REPO_BASE + "websitephotos/thumbs/";
 const FULL_BASE_PATH  = REPO_BASE + "websitephotos/full/";
 
@@ -157,7 +154,7 @@ const BATCH_SIZE = 60;
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 function openLightbox(src){
-  lightboxImg.src = src;
+  lightboxImg.src = src; 
   lightbox.classList.add("open");
 }
 function closeLightbox(){
@@ -168,101 +165,81 @@ lightbox.addEventListener("click", e => { if(e.target===lightbox) closeLightbox(
 lightbox.querySelector(".lightbox__close").addEventListener("click", closeLightbox);
 document.addEventListener("keydown", e => { if(e.key==="Escape") closeLightbox(); });
 
-
-// ===== MiniMasonry fallback (for browsers without CSS masonry) =====
-class MiniMasonry {
-  constructor(options){
-    this.container = typeof options.container === "string"
-      ? document.querySelector(options.container)
-      : options.container;
-    this.baseWidth = options.baseWidth || 260;
-    this.gutter = options.gutter || 8;
-    this.handleResize = this.layout.bind(this);
-    window.addEventListener("resize", this.handleResize);
-  }
-
-  layout(){
-    const container = this.container;
-    if(!container) return;
-    const items = Array.from(container.children);
-    if(!items.length) return;
-
-    const containerWidth = container.clientWidth;
-    if(!containerWidth) return;
-
-    const colWidth = this.baseWidth + this.gutter;
-    const columns = Math.max(1, Math.floor((containerWidth + this.gutter) / colWidth));
-    const colHeights = new Array(columns).fill(0);
-
-    const itemWidth = (containerWidth - this.gutter * (columns - 1)) / columns;
-
-    container.style.position = "relative";
-
-    items.forEach(el => {
-      el.style.position = "absolute";
-      el.style.width = itemWidth + "px";
-      el.style.margin = "0";
-
-      const minCol = colHeights.indexOf(Math.min(...colHeights));
-      const left = minCol * (itemWidth + this.gutter);
-      const top = colHeights[minCol];
-
-      el.style.transform = "translate(" + left + "px," + top + "px)";
-      colHeights[minCol] += el.offsetHeight + this.gutter;
-    });
-
-    container.style.height = Math.max(...colHeights) + "px";
-  }
-
-  destroy(){
-    window.removeEventListener("resize", this.handleResize);
-  }
-}
-
-
 // ===== Gallery logic =====
 const gallery=document.getElementById("gallery");
-let canonicalNames = [];
-let appendedWraps=0;
+let canonical=[], appendedWraps=0;
 
-// Detect CSS masonry support
-const supportsCssMasonry = typeof CSS !== "undefined" &&
-  CSS.supports &&
-  CSS.supports("grid-template-rows", "masonry");
+// *** NEW: masonry layout state ***
+let masonryRaf = null;
 
-let miniMasonry = null;
-
-function initLayoutEngine(){
-  if(supportsCssMasonry){
-    // Modern browsers: pure CSS masonry grid
-    gallery.classList.add("masonry-grid");
-  }else{
-    // Older Safari / anything without CSS masonry: MiniMasonry fallback
-    const colMin = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--col-min")) || 220;
-    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--gap")) || 8;
-    miniMasonry = new MiniMasonry({
-      container: gallery,
-      baseWidth: colMin,
-      gutter: gap
-    });
-  }
+// Get numeric CSS custom property
+function getCssNumber(varName, fallback){
+  const val = getComputedStyle(document.documentElement).getPropertyValue(varName);
+  const n = parseFloat(val);
+  return Number.isFinite(n) ? n : fallback;
 }
 
-// Create a tile using thumbnail, store full-res for lightbox
+// *** NEW: Masonry layout function (replaces CSS columns) ***
+function layoutMasonry(){
+  const items = Array.from(gallery.children);
+  if(!items.length) return;
+
+  const gap = getCssNumber("--gap", 8);
+  const colMin = getCssNumber("--col-min", 220);
+
+  const galleryWidth = gallery.clientWidth;
+  if(!galleryWidth) return;
+
+  const colWidthTotal = colMin + gap;
+  let columns = Math.max(1, Math.floor((galleryWidth + gap) / colWidthTotal));
+  const columnWidth = (galleryWidth - gap * (columns - 1)) / columns;
+
+  const colHeights = new Array(columns).fill(0);
+
+  items.forEach(el => {
+    el.style.width = columnWidth + "px";
+
+    // pick the column with smallest height
+    const colIndex = colHeights.indexOf(Math.min(...colHeights));
+    const x = colIndex * (columnWidth + gap);
+    const y = colHeights[colIndex];
+
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+
+    colHeights[colIndex] = y + el.offsetHeight + gap;
+  });
+
+  const maxHeight = Math.max(...colHeights);
+  gallery.style.height = maxHeight + "px";
+}
+
+// *** NEW: debounced layout trigger ***
+function requestMasonryLayout(){
+  if(masonryRaf !== null) cancelAnimationFrame(masonryRaf);
+  masonryRaf = requestAnimationFrame(() => {
+    layoutMasonry();
+    masonryRaf = null;
+  });
+}
+
+// Create tile using thumbnail, store full-res for lightbox
 function makeTile(name){
   const a=document.createElement("a");
   a.className="tile";
-  const fullSrc = FULL_BASE_PATH + name;
-  const thumbSrc = THUMB_BASE_PATH + name;
-  a.href = fullSrc;
+  a.href = FULL_BASE_PATH + name;
 
   const img=document.createElement("img");
   img.loading="lazy";
   img.decoding="async";
   img.fetchPriority = "low";
-  img.src = thumbSrc;
-  img.dataset.full = fullSrc;
+  img.src = THUMB_BASE_PATH + name;
+  img.dataset.full = FULL_BASE_PATH + name;
   img.alt="";
+
+  // *** NEW: re-layout when each thumb finishes loading ***
+  img.addEventListener("load", requestMasonryLayout);
+  img.addEventListener("error", requestMasonryLayout);
 
   a.appendChild(img);
 
@@ -271,63 +248,74 @@ function makeTile(name){
     openLightbox(img.dataset.full);
   });
 
-  return {el:a};
+  return {el:a, name};
 }
 
 // Build sorted gallery using precomputed HSL (no heavy decode)
 async function buildColorSortedGallery(records){
   if(!records.length)return;
 
+  // Direct HSL ordering from manifest
   const sorted = records.slice().sort((a,b)=>
     a.h===b.h ? a.l-b.l : a.h-b.h
   );
 
-  canonicalNames = sorted.map(rec => rec.name);
+  canonical = sorted.map(rec => makeTile(rec.name).el);
 
-  renderInitial();
-  window.addEventListener("scroll", maybeAppendWrap);
+  renderInitial(canonical);
+  window.addEventListener("scroll",maybeAppendWrap);
+
+  // *** NEW: re-layout on resize / orientation change ***
+  window.addEventListener("resize", () => {
+    requestMasonryLayout();
+  });
 }
 
-function renderInitial(){
+function renderInitial(list){
   gallery.innerHTML="";
   const frag=document.createDocumentFragment();
-  canonicalNames.forEach(name => {
-    const tile = makeTile(name);
-    frag.appendChild(tile.el);
-  });
+  list.forEach(el=>frag.appendChild(el.cloneNode(true)));
   gallery.appendChild(frag);
   appendedWraps=1;
-
-  if(miniMasonry){
-    requestAnimationFrame(()=>miniMasonry.layout());
-  }
+  requestMasonryLayout();        // *** NEW ***
 }
 
 function maybeAppendWrap(){
-  const doc = document.documentElement;
-  if(doc.scrollTop + doc.clientHeight > doc.scrollHeight - 600){
-    appendNextWrap();
-  }
+  const {scrollTop,clientHeight,scrollHeight}=document.documentElement;
+  if(scrollTop+clientHeight>scrollHeight-600){ appendNextWrap(); }
 }
 
 function appendNextWrap(){
-  if(!canonicalNames.length) return;
+  if(!canonical.length) return;
 
-  const startIndex=(appendedWraps*BATCH_SIZE)%canonicalNames.length;
+  const startIndex=(appendedWraps*BATCH_SIZE)%canonical.length;
   const frag=document.createDocumentFragment();
 
   for(let i=0;i<BATCH_SIZE;i++){
-    const idx=(startIndex+i)%canonicalNames.length;
-    const tile = makeTile(canonicalNames[idx]);
-    frag.appendChild(tile.el);
-  }
+    const idx=(startIndex+i)%canonical.length;
+    // Avoid cloning images too deeply
+    const wrapper = canonical[idx].cloneNode(false);
+    const imgOrig = canonical[idx].querySelector("img");
+    const img = imgOrig.cloneNode(false);
+    img.src = imgOrig.src;
+    img.dataset.full = imgOrig.dataset.full;
 
+    // *** NEW: relayout when new clones load ***
+    img.addEventListener("load", requestMasonryLayout);
+    img.addEventListener("error", requestMasonryLayout);
+
+    wrapper.appendChild(img);
+
+    wrapper.addEventListener("click", e => {
+      e.preventDefault();
+      openLightbox(img.dataset.full);
+    });
+
+    frag.appendChild(wrapper);
+  }
   gallery.appendChild(frag);
   appendedWraps++;
-
-  if(miniMasonry){
-    requestAnimationFrame(()=>miniMasonry.layout());
-  }
+  requestMasonryLayout();      // *** NEW ***
 }
 
 // ===== Load from photolist.json =====
@@ -344,32 +332,19 @@ async function loadImages(){
     gallery.textContent="⚠️ Could not load photo list.";
   }
 }
+document.addEventListener("DOMContentLoaded",loadImages);
 
-document.addEventListener("DOMContentLoaded", () => {
-  initLayoutEngine();
-  loadImages();
-});
-
-// ===== Fade-in transition (unchanged) =====
+// ===== Fade-in transition (UNCHANGED) =====
 document.addEventListener("DOMContentLoaded",()=>{
   const container=document.getElementById("white-transition");
-  const cellSize=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')) || 60;
-  const cols=Math.ceil(window.innerWidth/cellSize);
-  const rows=Math.ceil(window.innerHeight/cellSize);
+  const cols=Math.ceil(window.innerWidth/parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')));
+  const rows=Math.ceil(window.innerHeight/parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')));
   const total=cols*rows;
-  for(let i=0;i<total;i++){
-    const b=document.createElement("div");
-    b.className="white-block";
-    container.appendChild(b);
-  }
-  const blocks=Array.from(container.children);
-  blocks.sort(()=>Math.random()-0.5);
-  let index=0;
-  const step=25;
+  for(let i=0;i<total;i++){const b=document.createElement("div");b.className="white-block";container.appendChild(b);}
+  const blocks=Array.from(container.children); blocks.sort(()=>Math.random()-0.5);
+  let index=0; const step=25;
   const interval=setInterval(()=>{
-    for(let i=0;i<step&&index<blocks.length;i++,index++){
-      blocks[index].style.opacity=1;
-    }
+    for(let i=0;i<step&&index<blocks.length;i++,index++){blocks[index].style.opacity=1;}
     if(index>=blocks.length){
       clearInterval(interval);
       setTimeout(()=>{
