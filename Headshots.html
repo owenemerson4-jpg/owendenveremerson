@@ -41,24 +41,23 @@
   opacity: 0.7;
 }
 
-
-  /* Masonry grid */
+  /* Masonry grid (JS-controlled, same as filmphotography) */
   .gallery{
-    column-width: var(--col-min);
-    column-gap: var(--gap);
     padding: calc(var(--gap) + 16px);
     max-width: 1400px;
     margin: 0 auto;
+    position: relative; /* for absolutely positioned tiles */
   }
   .tile{
     display:block;
-    break-inside: avoid;
     margin: 0 0 var(--gap) 0;
     border-radius: 0;
     overflow:hidden;
     background:#f6f6f6;
     box-shadow: 0 1px 2px rgba(0,0,0,.06);
-    position:relative;
+    position:absolute; /* JS sets left/top */
+    left:0;
+    top:0;
   }
   .tile img{
     width:100%;
@@ -137,7 +136,12 @@
 // ===== CONFIG =====
 // Corrected for GitHub Pages under /owendenveremerson/
 const REPO_BASE = "/owenemerson4-jpg.github.io/";
-const IMAGE_BASE_PATH = REPO_BASE + "headshotimages/";
+
+// For now, thumbs & full are the same files in headshotimages/
+// (later you can split into /thumbs and /full if you want)
+const FULL_BASE_PATH  = REPO_BASE + "headshotimages/";
+const THUMB_BASE_PATH = FULL_BASE_PATH;
+
 const MANIFEST_URL = REPO_BASE + "photolist2.json";
 
 const BATCH_SIZE = 60;
@@ -145,126 +149,180 @@ const BATCH_SIZE = 60;
 // ===== Lightbox logic =====
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
-function openLightbox(src){ lightboxImg.src = src; lightbox.classList.add("open"); }
-function closeLightbox(){ lightbox.classList.remove("open"); lightboxImg.src=""; }
+function openLightbox(src){
+  lightboxImg.src = src; 
+  lightbox.classList.add("open");
+}
+function closeLightbox(){
+  lightbox.classList.remove("open");
+  lightboxImg.src="";
+}
 lightbox.addEventListener("click", e => { if(e.target===lightbox) closeLightbox(); });
 lightbox.querySelector(".lightbox__close").addEventListener("click", closeLightbox);
 document.addEventListener("keydown", e => { if(e.key==="Escape") closeLightbox(); });
 
-// ===== Average color helper =====
-function averageHSL(img){
-  try{
-    const w = 32, h = Math.max(8, Math.round(32 * (img.naturalHeight / img.naturalWidth || 1)));
-    const c = document.createElement("canvas");
-    c.width=w; c.height=h;
-    const ctx=c.getContext("2d");
-    ctx.drawImage(img,0,0,w,h);
-    const data=ctx.getImageData(0,0,w,h).data;
-    let r=0,g=0,b=0,count=w*h;
-    for(let i=0;i<data.length;i+=4){r+=data[i];g+=data[i+1];b+=data[i+2];}
-    r/=count; g/=count; b/=count;
-    r/=255; g/=255; b/=255;
-    const max=Math.max(r,g,b), min=Math.min(r,g,b);
-    let hsl_h, hsl_s, l=(max+min)/2;
-    if(max===min){hsl_h=0; hsl_s=0;}
-    else{
-      const d=max-min;
-      hsl_s=l>0.5?d/(2-max-min):d/(max+min);
-      switch(max){
-        case r: hsl_h=(g-b)/d+(g<b?6:0); break;
-        case g: hsl_h=(b-r)/d+2; break;
-        default: hsl_h=(r-g)/d+4; break;
-      }
-      hsl_h/=6;
-    }
-    return {h:hsl_h,s:hsl_s,l:l};
-  }catch{return {h:0,s:0,l:0};}
-}
-
-// ===== Gallery logic =====
+// ===== Gallery + Masonry logic (same as working Film Photography page) =====
 const gallery=document.getElementById("gallery");
 let canonical=[], appendedWraps=0;
 
-function makeTile(src){
-  const a=document.createElement("a");
-  a.className="tile";
-  a.href=src;
-  a.addEventListener("click",e=>{e.preventDefault();openLightbox(src);});
-  const img=document.createElement("img");
-  img.loading="lazy"; img.decoding="async"; img.src=src;
-  img.alt="";
-  a.appendChild(img);
-  return {el:a,img};
+let masonryRaf = null;
+
+function getCssNumber(varName, fallback){
+  const val = getComputedStyle(document.documentElement).getPropertyValue(varName);
+  const n = parseFloat(val);
+  return Number.isFinite(n) ? n : fallback;
 }
 
-async function buildColorSortedGallery(srcList){
-  if(!srcList.length)return;
-const items = await Promise.all(srcList.map(src => new Promise(resolve => {
-  const { el, img } = makeTile(src);
-  let settled = false;
+function layoutMasonry(){
+  const items = Array.from(gallery.children);
+  if(!items.length) return;
 
-  const finalize = (h,s,l) => {
-    if (settled) return;
-    settled = true;
-    resolve({ el, img, src, h, s, l });
-  };
+  const gap = getCssNumber("--gap", 8);
+  const colMin = getCssNumber("--col-min", 220);
+  const galleryWidth = gallery.clientWidth;
+  if(!galleryWidth) return;
 
-  img.addEventListener("load", () => {
-    const { h, s, l } = averageHSL(img);
-    finalize(h, s, l);
-  }, { once: true });
+  const colWidthTotal = colMin + gap;
+  let columns = Math.max(1, Math.floor((galleryWidth + gap) / colWidthTotal));
+  const columnWidth = (galleryWidth - gap * (columns - 1)) / columns;
 
-  img.addEventListener("error", () => finalize(0, 0, 0.5), { once: true });
+  const colHeights = new Array(columns).fill(0);
 
-  // fallback: resolve anyway after 3s
-  setTimeout(() => finalize(0, 0, 0.5), 3000);
-})));
+  items.forEach(el => {
+    el.style.width = columnWidth + "px";
 
-  items.sort((a,b)=>a.h===b.h ? a.l-b.l : a.h-b.h);
-  canonical=items.map(x=>x.el);
+    const colIndex = colHeights.indexOf(Math.min(...colHeights));
+    const x = colIndex * (columnWidth + gap);
+    const y = colHeights[colIndex];
+
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+
+    colHeights[colIndex] = y + el.offsetHeight + gap;
+  });
+
+  const maxHeight = Math.max(...colHeights);
+  gallery.style.height = maxHeight + "px";
+}
+
+function requestMasonryLayout(){
+  if(masonryRaf !== null) cancelAnimationFrame(masonryRaf);
+  masonryRaf = requestAnimationFrame(() => {
+    layoutMasonry();
+    masonryRaf = null;
+  });
+}
+
+// Create tile using "thumb" (currently same as full), store full-res for lightbox
+function makeTile(name){
+  const a=document.createElement("a");
+  a.className="tile";
+  a.href = FULL_BASE_PATH + name;
+
+  const img=document.createElement("img");
+  img.loading="lazy";
+  img.decoding="async";
+  img.fetchPriority = "low";
+  img.src = THUMB_BASE_PATH + name;
+  img.dataset.full = FULL_BASE_PATH + name;
+  img.alt="";
+
+  img.addEventListener("load", requestMasonryLayout);
+  img.addEventListener("error", requestMasonryLayout);
+
+  a.appendChild(img);
+
+  a.addEventListener("click",e=>{
+    e.preventDefault();
+    openLightbox(img.dataset.full);
+  });
+
+  return {el:a, name};
+}
+
+// Build sorted gallery using precomputed HSL from photolist2.json
+async function buildColorSortedGallery(records){
+  if(!records.length)return;
+
+  const sorted = records.slice().sort((a,b)=>
+    a.h===b.h ? a.l-b.l : a.h-b.h
+  );
+
+  canonical = sorted.map(rec => makeTile(rec.name).el);
+
   renderInitial(canonical);
   window.addEventListener("scroll",maybeAppendWrap);
+  window.addEventListener("resize", requestMasonryLayout);
 }
 
 function renderInitial(list){
   gallery.innerHTML="";
   const frag=document.createDocumentFragment();
-  list.forEach(el=>frag.appendChild(el.cloneNode(true)));
+  // Use the original elements so their load listeners stay attached
+  list.forEach(el=>frag.appendChild(el));
   gallery.appendChild(frag);
   appendedWraps=1;
+  requestMasonryLayout();
 }
 
 function maybeAppendWrap(){
-  const {scrollTop,clientHeight,scrollHeight}=document.documentElement;
-  if(scrollTop+clientHeight>scrollHeight-600){ appendNextWrap(); }
+  const doc = document.documentElement;
+  if(doc.scrollTop + doc.clientHeight > doc.scrollHeight - 600){
+    appendNextWrap();
+  }
 }
+
 function appendNextWrap(){
+  if(!canonical.length) return;
+
   const startIndex=(appendedWraps*BATCH_SIZE)%canonical.length;
   const frag=document.createDocumentFragment();
+
   for(let i=0;i<BATCH_SIZE;i++){
     const idx=(startIndex+i)%canonical.length;
-    frag.appendChild(canonical[idx].cloneNode(true));
+    const template = canonical[idx];
+
+    const wrapper = template.cloneNode(false);
+    const imgOrig = template.querySelector("img");
+    const img = imgOrig.cloneNode(false);
+
+    img.src = imgOrig.src;
+    img.dataset.full = imgOrig.dataset.full;
+
+    img.addEventListener("load", requestMasonryLayout);
+    img.addEventListener("error", requestMasonryLayout);
+
+    wrapper.appendChild(img);
+
+    wrapper.addEventListener("click", e => {
+      e.preventDefault();
+      openLightbox(img.dataset.full);
+    });
+
+    frag.appendChild(wrapper);
   }
   gallery.appendChild(frag);
   appendedWraps++;
+  requestMasonryLayout();
 }
 
-// ===== Load from photolist.json =====
+// ===== Load from photolist2.json =====
+// Expects: [{name:"file.jpg",h:0.1,s:0.3,l:0.5}, ...]
 async function loadImages(){
   try{
     const res=await fetch(MANIFEST_URL);
     const list=await res.json();
-    const full=list.map(name=>IMAGE_BASE_PATH+name);
-    console.log("Photo list loaded:", full);
-    await buildColorSortedGallery(full);
+
+    console.log("Headshot photo list loaded:", list);
+    await buildColorSortedGallery(list);
   }catch(err){
-    console.error("Failed to load photolist.json:",err);
+    console.error("Failed to load photolist2.json:",err);
     gallery.textContent="⚠️ Could not load photo list.";
   }
 }
 document.addEventListener("DOMContentLoaded",loadImages);
 
-// ===== Fade-in transition =====
+// ===== Fade-in transition (unchanged) =====
 document.addEventListener("DOMContentLoaded",()=>{
   const container=document.getElementById("white-transition");
   const cols=Math.ceil(window.innerWidth/parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fade-cell')));
