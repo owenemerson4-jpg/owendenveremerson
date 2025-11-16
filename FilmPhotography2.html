@@ -42,15 +42,13 @@
 }
 
   /* Masonry grid */
-
-  /* *** CHANGED: removed column-* so JS masonry can fully control layout */
+  /* Was column-width/column-gap; now JS-controlled absolute layout */
   .gallery{
     padding: calc(var(--gap) + 16px);
     max-width: 1400px;
     margin: 0 auto;
-    position: relative;           /* *** NEW: needed for absolute-positioned tiles */
+    position: relative; /* needed for absolutely positioned tiles */
   }
-
   .tile{
     display:block;
     margin: 0 0 var(--gap) 0;
@@ -58,11 +56,9 @@
     overflow:hidden;
     background:#f6f6f6;
     box-shadow: 0 1px 2px rgba(0,0,0,.06);
-    position:absolute;            /* *** NEW: JS masonry will place these */
-    left:0; top:0;                /* *** NEW: default, updated in JS */
-
-    content-visibility: auto;
-    contain-intrinsic-size: 300px 200px;
+    position:absolute; /* JS sets left/top */
+    left:0;
+    top:0;
   }
   .tile img{
     width:100%;
@@ -165,28 +161,24 @@ lightbox.addEventListener("click", e => { if(e.target===lightbox) closeLightbox(
 lightbox.querySelector(".lightbox__close").addEventListener("click", closeLightbox);
 document.addEventListener("keydown", e => { if(e.key==="Escape") closeLightbox(); });
 
-// ===== Gallery logic =====
+// ===== Gallery + Masonry logic =====
 const gallery=document.getElementById("gallery");
 let canonical=[], appendedWraps=0;
 
-// *** NEW: masonry layout state ***
 let masonryRaf = null;
 
-// Get numeric CSS custom property
 function getCssNumber(varName, fallback){
   const val = getComputedStyle(document.documentElement).getPropertyValue(varName);
   const n = parseFloat(val);
   return Number.isFinite(n) ? n : fallback;
 }
 
-// *** NEW: Masonry layout function (replaces CSS columns) ***
 function layoutMasonry(){
   const items = Array.from(gallery.children);
   if(!items.length) return;
 
   const gap = getCssNumber("--gap", 8);
   const colMin = getCssNumber("--col-min", 220);
-
   const galleryWidth = gallery.clientWidth;
   if(!galleryWidth) return;
 
@@ -199,7 +191,6 @@ function layoutMasonry(){
   items.forEach(el => {
     el.style.width = columnWidth + "px";
 
-    // pick the column with smallest height
     const colIndex = colHeights.indexOf(Math.min(...colHeights));
     const x = colIndex * (columnWidth + gap);
     const y = colHeights[colIndex];
@@ -207,6 +198,7 @@ function layoutMasonry(){
     el.style.left = x + "px";
     el.style.top = y + "px";
 
+    // measure AFTER width set, in case height depends on it
     colHeights[colIndex] = y + el.offsetHeight + gap;
   });
 
@@ -214,7 +206,6 @@ function layoutMasonry(){
   gallery.style.height = maxHeight + "px";
 }
 
-// *** NEW: debounced layout trigger ***
 function requestMasonryLayout(){
   if(masonryRaf !== null) cancelAnimationFrame(masonryRaf);
   masonryRaf = requestAnimationFrame(() => {
@@ -223,7 +214,7 @@ function requestMasonryLayout(){
   });
 }
 
-// Create tile using thumbnail, store full-res for lightbox
+// Create tile using thumbnail, store full res for lightbox
 function makeTile(name){
   const a=document.createElement("a");
   a.className="tile";
@@ -237,7 +228,7 @@ function makeTile(name){
   img.dataset.full = FULL_BASE_PATH + name;
   img.alt="";
 
-  // *** NEW: re-layout when each thumb finishes loading ***
+  // re-layout when each thumb finishes loading
   img.addEventListener("load", requestMasonryLayout);
   img.addEventListener("error", requestMasonryLayout);
 
@@ -255,7 +246,6 @@ function makeTile(name){
 async function buildColorSortedGallery(records){
   if(!records.length)return;
 
-  // Direct HSL ordering from manifest
   const sorted = records.slice().sort((a,b)=>
     a.h===b.h ? a.l-b.l : a.h-b.h
   );
@@ -264,25 +254,25 @@ async function buildColorSortedGallery(records){
 
   renderInitial(canonical);
   window.addEventListener("scroll",maybeAppendWrap);
-
-  // *** NEW: re-layout on resize / orientation change ***
-  window.addEventListener("resize", () => {
-    requestMasonryLayout();
-  });
+  window.addEventListener("resize", requestMasonryLayout);
 }
 
 function renderInitial(list){
   gallery.innerHTML="";
   const frag=document.createDocumentFragment();
-  list.forEach(el=>frag.appendChild(el.cloneNode(true)));
+
+  // IMPORTANT: append the actual elements (no clone) so their load listeners stay
+  list.forEach(el=>frag.appendChild(el));
   gallery.appendChild(frag);
   appendedWraps=1;
-  requestMasonryLayout();        // *** NEW ***
+  requestMasonryLayout();
 }
 
 function maybeAppendWrap(){
-  const {scrollTop,clientHeight,scrollHeight}=document.documentElement;
-  if(scrollTop+clientHeight>scrollHeight-600){ appendNextWrap(); }
+  const doc = document.documentElement;
+  if(doc.scrollTop + doc.clientHeight > doc.scrollHeight - 600){
+    appendNextWrap();
+  }
 }
 
 function appendNextWrap(){
@@ -293,14 +283,17 @@ function appendNextWrap(){
 
   for(let i=0;i<BATCH_SIZE;i++){
     const idx=(startIndex+i)%canonical.length;
-    // Avoid cloning images too deeply
-    const wrapper = canonical[idx].cloneNode(false);
-    const imgOrig = canonical[idx].querySelector("img");
+    const template = canonical[idx];
+
+    const wrapper = template.cloneNode(false);
+    const imgOrig = template.querySelector("img");
     const img = imgOrig.cloneNode(false);
+
+    // keep src + full-res
     img.src = imgOrig.src;
     img.dataset.full = imgOrig.dataset.full;
 
-    // *** NEW: relayout when new clones load ***
+    // re-layout when these clones load
     img.addEventListener("load", requestMasonryLayout);
     img.addEventListener("error", requestMasonryLayout);
 
@@ -315,7 +308,7 @@ function appendNextWrap(){
   }
   gallery.appendChild(frag);
   appendedWraps++;
-  requestMasonryLayout();      // *** NEW ***
+  requestMasonryLayout();
 }
 
 // ===== Load from photolist.json =====
